@@ -2,15 +2,23 @@
   "scripts": {
     "prebuild": "node ./scripts/generate-runtime-config.mjs",
     "build": "tailwindcss -i ./css/main.css -o ./dist/output.css",
+    "publish": "npm run build && node ./scripts/publish-static.mjs",
     "predev": "node ./scripts/generate-runtime-config.mjs",
-    "dev": "tailwindcss -i ./css/main.css -o ./dist/output.css --watch"
+    "dev:css": "tailwindcss -i ./css/main.css -o ./dist/output.css --watch",
+    "dev:server": "node ./server/index.mjs",
+    "dev": "concurrently -k -n CSS,SERVER \"npm run dev:css\" \"npm run dev:server\"",
+    "start": "node ./server/index.mjs",
+    "prestart": "node ./scripts/generate-runtime-config.mjs"
   },
   "dependencies": {
     "@tailwindcss/cli": "^4.1.17",
     "aos": "^2.3.4",
+    "express": "^4.21.2",
+    "zod": "^3.25.76",
     "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.7.1"
   }

@@ -4,7 +4,8 @@ const searchParams = new URLSearchParams(window.location.search);
 
 const STORAGE_KEYS = {
   orgSlug: "trevo-org-slug",
-  apiBaseUrl: "trevo-api-base-url",
+  storefrontApiBaseUrl: "trevo-storefront-api-base-url",
+  trevoApiBaseUrl: "trevo-origin-api-base-url",
   frontendBaseUrl: "trevo-frontend-base-url",
   debug: "trevo-debug-enabled",
 };
@@ -75,8 +76,11 @@ function readDebugFlag() {
 
 clearTrevoOverridesIfRequested();
 
-const defaultApiBaseUrl =
-  runtimeConfig.apiBaseUrl ||
+const defaultStorefrontApiBaseUrl =
+  runtimeConfig.storefrontApiBaseUrl ||
+  (isLocalhost ? "http://127.0.0.1:3200" : window.location.origin.replace(/\/$/, ""));
+const defaultTrevoApiBaseUrl =
+  runtimeConfig.trevoApiBaseUrl ||
   (isLocalhost ? "http://127.0.0.1:15000" : "https://api.trevo.studio");
 const defaultFrontendBaseUrl =
   runtimeConfig.frontendBaseUrl ||
@@ -86,12 +90,17 @@ export const trevoConfig = {
   orgSlug: readPersistedOverride(
     "trevo-org",
     STORAGE_KEYS.orgSlug,
-    runtimeConfig.orgSlug || "tea-station",
+    runtimeConfig.orgSlug || "tea-store",
   ),
-  apiBaseUrl: readPersistedOverride(
+  storefrontApiBaseUrl: readPersistedOverride(
     "trevo-api",
-    STORAGE_KEYS.apiBaseUrl,
-    defaultApiBaseUrl,
+    STORAGE_KEYS.storefrontApiBaseUrl,
+    defaultStorefrontApiBaseUrl,
+  ),
+  trevoApiBaseUrl: readPersistedOverride(
+    "trevo-origin-api",
+    STORAGE_KEYS.trevoApiBaseUrl,
+    defaultTrevoApiBaseUrl,
   ),
   frontendBaseUrl: readPersistedOverride(
     "trevo-front",

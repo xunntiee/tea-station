@@ -31,44 +31,91 @@ export function resolveImageUrl(imageUrl) {
   }
 
   try {
-    return new URL(imageUrl, trevoConfig.apiBaseUrl).toString();
+    return new URL(imageUrl, trevoConfig.trevoApiBaseUrl).toString();
   } catch {
     if (String(imageUrl).startsWith("/")) {
-      return `${trevoConfig.apiBaseUrl}${imageUrl}`;
+      return `${trevoConfig.trevoApiBaseUrl}${imageUrl}`;
     }
 
     return imageUrl;
   }
 }
 
-export function buildTrevoCheckoutUrl(items) {
-  const url = new URL(
-    `/${trevoConfig.orgSlug}/order`,
-    trevoConfig.frontendBaseUrl.replace(/\/$/, "") + "/",
-  );
-  url.searchParams.set(
-    "products",
-    items.map((item) => `${item.productId}:${item.quantity}`).join(","),
-  );
-  return url.toString();
-}
-
 export async function fetchTrevoPublicCatalog() {
   let response;
   try {
+    response = await fetch(`${trevoConfig.storefrontApiBaseUrl}/api/storefront/catalog`, {
+      credentials: "omit",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+  } catch (error) {
+    throw new Error(
+      `Failed to fetch Tea Station API from ${trevoConfig.storefrontApiBaseUrl}. Check whether the Tea Station backend is running.`,
+    );
+  }
+
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const message =
+      payload &&
+      typeof payload === "object" &&
+      "message" in payload &&
+      typeof payload.message === "string"
+        ? payload.message
+        : `Request failed with status ${response.status}`;
+    throw new Error(message);
+  }
+
+  return payload?.data ?? payload;
+}
+
+export async function createStorefrontCheckout(input) {
+  let response;
+  try {
+    response = await fetch(`${trevoConfig.storefrontApiBaseUrl}/api/storefront/checkout`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    });
+  } catch {
+    throw new Error(
+      `Failed to create checkout session via ${trevoConfig.storefrontApiBaseUrl}.`,
+    );
+  }
+
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const message =
+      payload &&
+      typeof payload === "object" &&
+      "message" in payload &&
+      typeof payload.message === "string"
+        ? payload.message
+        : `Request failed with status ${response.status}`;
+    throw new Error(message);
+  }
+
+  return payload?.data ?? payload;
+}
+
+export async function getStorefrontOrderStatus(orderId) {
+  let response;
+  try {
     response = await fetch(
-      `${trevoConfig.apiBaseUrl}/api/public/${trevoConfig.orgSlug}/products`,
+      `${trevoConfig.storefrontApiBaseUrl}/api/storefront/orders/${encodeURIComponent(orderId)}/status`,
       {
-        credentials: "omit",
         headers: {
           Accept: "application/json",
         },
       },
     );
-  } catch (error) {
-    throw new Error(
-      `Failed to fetch Trevo public API from ${trevoConfig.apiBaseUrl}. Check CORS/origin allowlist for ${trevoConfig.landingOrigin}.`,
-    );
+  } catch {
+    throw new Error("Failed to check order status from Tea Station backend.");
   }
 
   const payload = await response.json().catch(() => null);

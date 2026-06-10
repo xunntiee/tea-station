@@ -55,8 +55,9 @@ const env = {
 };
 
 const runtimeConfig = {
-  orgSlug: env.TREVO_ORG_SLUG || "tea-station",
-  apiBaseUrl: env.TREVO_API_BASE_URL || "https://api.trevo.studio",
+  orgSlug: env.TREVO_ORG_SLUG || "tea-store",
+  storefrontApiBaseUrl: env.TEA_STATION_API_BASE_URL || "",
+  trevoApiBaseUrl: env.TREVO_API_BASE_URL || "https://api.trevo.studio",
   frontendBaseUrl: env.TREVO_FRONTEND_BASE_URL || "https://app.trevo.studio",
   debug: asBoolean(env.TREVO_DEBUG, false),
 };

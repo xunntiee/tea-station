@@ -1,4 +1,10 @@
 import { partnerLogos, partnerLogoBasePath } from "./data.js";
+import {
+  addToCart,
+  bootstrapCartState,
+  getCartItemCount,
+  subscribeToCartUpdates,
+} from "./trevo-cart.js";
 import { trevoConfig } from "./trevo-config.js";
 import {
   fetchTrevoPublicCatalog,
@@ -123,7 +129,7 @@ function buildProductDescription(product) {
   const parts = [];
 
   if (product.categoryName) {
-    parts.push(`Danh muc: ${product.categoryName}`);
+    parts.push(`Danh mục: ${product.categoryName}`);
   }
 
   if (product.sku) {
@@ -132,8 +138,8 @@ function buildProductDescription(product) {
 
   parts.push(
     product.availableStock > 0
-      ? `Con ${product.availableStock} san pham`
-      : "Tam het hang",
+      ? `Còn  sản phẩm`
+      : "Tạm hết hàng",
   );
 
   return parts.join(" | ");
@@ -144,15 +150,15 @@ function getBestSellerPitch(product) {
 
   switch (categoryKey) {
     case "matcha":
-      return "Hop cho nang luong sang, tap trung va lam viec cua ngay.";
+      return "Hợp cho năng lượng sáng, tập trung và làm việc của ngày.";
     case "oolong":
-      return "Huong vi can bang, thom sau va de thuong thuc moi luc.";
+      return "Hương vị cân bằng, thơm sâu và dễ thưởng thức mọi lúc.";
     case "whitetea":
-      return "Nhe nhang, tinh te, phu hop nghi ngoi va thu gian.";
+      return "Nhẹ nhàng, tinh tế, phù hợp nghỉ ngơi và thư giãn.";
     case "blacktea":
-      return "Dam vi, manh me va hop voi nguoi thich huong vi ro net.";
+      return "Đậm vị, mạnh mẽ và hợp với người thích hương vị rõ nét.";
     default:
-      return "Lua chon noi bat trong catalog Tea Station.";
+      return "Lựa chọn nổi bật trong catalog Tea Station.";
   }
 }
 
@@ -169,6 +175,26 @@ function renderDebugMeta(product) {
       <p>ID: <code class="font-mono text-slate-700">${id}</code></p>
       <p>SKU: <code class="font-mono text-slate-700">${sku}</code></p>
     </div>
+  `;
+}
+
+function renderAddToCartButton(product, variant = "light") {
+  const quantity = Math.max(product.minOrderQty ?? 1, 1);
+  const disabledClass = product.availableStock > 0 ? "" : "pointer-events-none opacity-50";
+  const palette =
+    variant === "dark"
+      ? "border-white/30 text-white hover:bg-white/10"
+      : "border-slate-300 text-slate-700 hover:bg-slate-50";
+
+  return `
+    <button
+      type="button"
+      class="inline-flex items-center justify-center rounded-full border px-4 py-2 text-sm font-medium transition ${palette} ${disabledClass}"
+      data-add-to-cart
+      data-product-id="${escapeHtml(product.id)}"
+      data-product-qty="${quantity}"
+      ${product.availableStock > 0 ? "" : "disabled"}
+    >Thêm vào giỏ</button>
   `;
 }
 
@@ -284,8 +310,8 @@ function renderProductCard(product) {
       : "";
   const stockBadge =
     product.availableStock > 0
-      ? `<span class="inline-flex rounded-full bg-emerald-500/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white">Con hang</span>`
-      : `<span class="inline-flex rounded-full bg-rose-500/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white">Het hang</span>`;
+      ? `<span class="inline-flex rounded-full bg-emerald-500/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white">Còn hàng</span>`
+      : `<span class="inline-flex rounded-full bg-rose-500/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white">Hết hàng</span>`;
 
   return `
     <article
@@ -305,7 +331,7 @@ function renderProductCard(product) {
 
       <div class="space-y-3 p-5">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">${escapeHtml(product.categoryName ?? "San pham")}</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">${escapeHtml(product.categoryName ?? "Sản phẩm")}</p>
           <h3 class="mt-2 text-xl font-semibold text-slate-900">${escapeHtml(product.name)}</h3>
           <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(buildProductDescription(product))}</p>
           ${renderDebugMeta(product)}
@@ -316,13 +342,16 @@ function renderProductCard(product) {
             <p class="text-lg font-semibold text-slate-900">${escapeHtml(currentPrice)}</p>
             ${listPrice}
           </div>
-          <a
-            href="./checkout.html?products=${encodeURIComponent(`${product.id}:${Math.max(product.minOrderQty ?? 1, 1)}`)}"
-            class="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 ${product.availableStock > 0 ? "" : "pointer-events-none opacity-50"}"
-            ${product.availableStock > 0 ? "" : 'aria-disabled="true"'}
-          >
-            Dat ngay
-          </a>
+          <div class="flex flex-col items-end gap-2">
+            <a
+              href="./checkout.html?products=${encodeURIComponent(`${product.id}:${Math.max(product.minOrderQty ?? 1, 1)}`)}"
+              class="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 ${product.availableStock > 0 ? "" : "pointer-events-none opacity-50"}"
+              ${product.availableStock > 0 ? "" : 'aria-disabled="true"'}
+            >
+              Đặt ngay
+            </a>
+            ${renderAddToCartButton(product)}
+          </div>
         </div>
       </div>
     </article>
@@ -336,9 +365,9 @@ function renderFeaturedProductCard(selection) {
   const quantity = Math.max(product.minOrderQty ?? 1, 1);
   const price = formatCurrencyVnd(product.salePrice);
   const stockLabel =
-    product.availableStock > 0 ? `Con ${product.availableStock}` : "Tam het hang";
+    product.availableStock > 0 ? `Còn ` : "Tạm hết hàng";
   const eyebrow = config?.eyebrow ?? "Tea Station Selection";
-  const ctaLabel = config?.ctaLabel ?? "Dat ngay";
+  const ctaLabel = config?.ctaLabel ?? "Đặt ngay";
 
   return `
     <article class="group overflow-hidden rounded-[2rem] border border-p-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
@@ -351,7 +380,7 @@ function renderFeaturedProductCard(selection) {
             loading="lazy"
           />
           <div class="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-p-700 shadow-sm">
-            ${escapeHtml(product.categoryName ?? "San pham")}
+            ${escapeHtml(product.categoryName ?? "Sản phẩm")}
           </div>
         </div>
       </a>
@@ -366,16 +395,19 @@ function renderFeaturedProductCard(selection) {
             <p class="text-lg font-semibold text-slate-900">${escapeHtml(price)}</p>
             <p class="text-xs text-slate-500">${escapeHtml(stockLabel)}</p>
           </div>
-          <a
-            href="./checkout.html?products=${encodeURIComponent(`${product.id}:${quantity}`)}"
-            class="inline-flex items-center justify-center rounded-full bg-p-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-p-700 ${product.availableStock > 0 ? "" : "pointer-events-none opacity-50"}"
-            ${product.availableStock > 0 ? "" : 'aria-disabled="true"'}
-          >
-            ${escapeHtml(ctaLabel)}
-          </a>
+          <div class="flex flex-col items-end gap-2">
+            <a
+              href="./checkout.html?products=${encodeURIComponent(`${product.id}:${quantity}`)}"
+              class="inline-flex items-center justify-center rounded-full bg-p-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-p-700 ${product.availableStock > 0 ? "" : "pointer-events-none opacity-50"}"
+              ${product.availableStock > 0 ? "" : 'aria-disabled="true"'}
+            >
+              ${escapeHtml(ctaLabel)}
+            </a>
+            ${renderAddToCartButton(product)}
+          </div>
         </div>
         <a href="${targetUrl}" class="inline-flex text-sm font-medium text-p-700 transition hover:text-p-900">
-          Xem theo danh muc
+          Xem theo danh mục
         </a>
       </div>
     </article>
@@ -384,14 +416,14 @@ function renderFeaturedProductCard(selection) {
 
 function renderBestSellerSlide(selection) {
   const { product, config } = selection;
-  const categoryLabel = product.categoryName ?? "San pham";
+  const categoryLabel = product.categoryName ?? "Sản phẩm";
   const price = formatCurrencyVnd(product.salePrice);
   const stockLabel =
-    product.availableStock > 0 ? `Con ${product.availableStock}` : "Tam het hang";
+    product.availableStock > 0 ? `Còn ` : "Tạm hết hàng";
   const quantity = Math.max(product.minOrderQty ?? 1, 1);
   const pitch = config?.pitch ?? getBestSellerPitch(product);
   const eyebrow = config?.eyebrow ?? "Best seller";
-  const ctaLabel = config?.ctaLabel ?? "Dat ngay";
+  const ctaLabel = config?.ctaLabel ?? "Đặt ngay";
 
   return `
     <div class="!flex flex-col lg:flex-row items-center justify-between gap-10">
@@ -410,13 +442,16 @@ function renderBestSellerSlide(selection) {
         </div>
 
         <div class="mt-8">
-          <a
-            class="btn"
-            href="./checkout.html?products=${encodeURIComponent(`${product.id}:${quantity}`)}"
-            ${product.availableStock > 0 ? "" : 'aria-disabled="true"'}
-          >
-            ${escapeHtml(ctaLabel)}
-          </a>
+          <div class="flex flex-wrap gap-3">
+            <a
+              class="btn"
+              href="./checkout.html?products=${encodeURIComponent(`${product.id}:${quantity}`)}"
+              ${product.availableStock > 0 ? "" : 'aria-disabled="true"'}
+            >
+              ${escapeHtml(ctaLabel)}
+            </a>
+            ${renderAddToCartButton(product, "dark")}
+          </div>
         </div>
       </div>
 
@@ -493,7 +528,7 @@ function mountCatalogDebugPanel(container, products) {
 
   const productRows = products
     .map((product) => {
-      const category = product.categoryName ?? "San pham";
+      const category = product.categoryName ?? "Sản phẩm";
       const sku = product.sku ?? "none";
       return `<li><code class="font-mono text-slate-700">${escapeHtml(product.id)}</code> - <code class="font-mono text-slate-700">${escapeHtml(sku)}</code> - ${escapeHtml(product.name)} - ${escapeHtml(category)}</li>`;
     })
@@ -505,14 +540,15 @@ function mountCatalogDebugPanel(container, products) {
     "mb-6 rounded-[1.5rem] border border-amber-300 bg-amber-50/90 px-5 py-4 text-left text-sm text-slate-700 shadow-sm";
   panel.innerHTML = `
     <p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">Trevo Debug</p>
-    <h3 class="mt-2 text-lg font-semibold text-slate-900">Catalog inspector dang bat</h3>
+    <h3 class="mt-2 text-lg font-semibold text-slate-900">Catalog inspector đang bật</h3>
     <p class="mt-2 leading-6">
       Org: <code class="font-mono">${escapeHtml(trevoConfig.orgSlug)}</code><br />
-      API: <code class="font-mono break-all">${escapeHtml(trevoConfig.apiBaseUrl)}</code><br />
+      Tea Station API: <code class="font-mono break-all">${escapeHtml(trevoConfig.storefrontApiBaseUrl)}</code><br />
+      Trevo API: <code class="font-mono break-all">${escapeHtml(trevoConfig.trevoApiBaseUrl)}</code><br />
       Frontend: <code class="font-mono break-all">${escapeHtml(trevoConfig.frontendBaseUrl)}</code>
     </p>
     <p class="mt-3 text-xs leading-5 text-slate-600">
-      Copy SKU hoac ID ben duoi roi dan vao <code class="font-mono">preferredSkus</code> hoac <code class="font-mono">preferredIds</code> trong <code class="font-mono">js/trevo-config.js</code>.
+      Copy SKU hoặc ID bên dưới rồi dán vào <code class="font-mono">preferredSkus</code> hoac <code class="font-mono">preferredIds</code> trong <code class="font-mono">js/trevo-config.js</code>.
     </p>
     <ol class="mt-4 list-decimal space-y-1 pl-5 text-xs leading-5">
       ${productRows}
@@ -533,6 +569,42 @@ function mountCatalogDebugPanel(container, products) {
   );
 }
 
+function updateCartBadges(count = getCartItemCount()) {
+  document.querySelectorAll("[data-cart-count]").forEach((node) => {
+    node.textContent = String(count);
+  });
+
+  document.querySelectorAll("[data-cart-label]").forEach((node) => {
+    node.textContent = count > 0 ? `Giỏ hàng ()` : "Giỏ hàng";
+  });
+}
+
+function attachCartHandlers() {
+  document.addEventListener("click", (event) => {
+    const target = event.target instanceof Element ? event.target.closest("[data-add-to-cart]") : null;
+    if (!(target instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    const productId = target.dataset.productId?.trim();
+    const quantity = Number.parseInt(target.dataset.productQty ?? "1", 10);
+    if (!productId) {
+      return;
+    }
+
+    addToCart(productId, Number.isInteger(quantity) && quantity > 0 ? quantity : 1);
+    const originalText = target.textContent;
+    target.textContent = "Đã thêm";
+    window.setTimeout(() => {
+      target.textContent = originalText ?? "Thêm vào giỏ";
+    }, 1200);
+  });
+
+  updateCartBadges();
+  subscribeToCartUpdates(({ count }) => updateCartBadges(count));
+  bootstrapCartState();
+}
+
 /* ================
   All Products
 =================== */
@@ -543,7 +615,7 @@ $(async function () {
   }
 
   setActiveFilterLink();
-  renderProductState(container, "<p>Dang tai san pham tu Trevo...</p>");
+  renderProductState(container, "<p>Đang tải sản phẩm từ Tea Station...</p>");
 
   try {
     const catalog = await loadTrevoCatalog();
@@ -552,7 +624,7 @@ $(async function () {
     if (products.length === 0) {
       renderProductState(
         container,
-        "<p class='text-lg font-medium text-slate-800'>Chua co san pham cong khai</p><p class='mt-2 text-sm'>Hay them san pham vao org tea-station trong Trevo roi quay lai.</p>",
+        "<p class='text-lg font-medium text-slate-800'>Chưa có sản phẩm công khai</p><p class='mt-2 text-sm'>Hãy thêm sản phẩm vào org tea-store trong Trevo rồi quay lại.</p>",
       );
       return;
     }
@@ -567,11 +639,11 @@ $(async function () {
     const message =
       error instanceof Error
         ? error.message
-        : "Khong ket noi duoc toi Trevo public API.";
+        : "Không kết nối được tới Tea Station API.";
 
     renderProductState(
       container,
-      `<p class="text-lg font-medium text-slate-800">Khong tai duoc san pham</p><p class="mt-2 text-sm">${escapeHtml(message)}</p>`,
+      `<p class="text-lg font-medium text-slate-800">Không tải được sản phẩm</p><p class="mt-2 text-sm">${escapeHtml(message)}</p>`,
     );
   }
 });
@@ -585,7 +657,7 @@ $(async function () {
     return;
   }
 
-  renderTrevoSectionState(container, "<p>Dang tai san pham noi bat tu Trevo...</p>");
+  renderTrevoSectionState(container, "<p>Đang tải sản phẩm nổi bật từ Tea Station...</p>");
 
   try {
     const catalog = await loadTrevoCatalog();
@@ -598,7 +670,7 @@ $(async function () {
     if (featuredProducts.length === 0) {
       renderTrevoSectionState(
         container,
-        "<p class='text-lg font-medium text-slate-800'>Chua co san pham noi bat cong khai</p><p class='mt-2 text-sm'>Hay bo sung san pham vao org tea-station trong Trevo.</p>",
+        "<p class='text-lg font-medium text-slate-800'>Chưa có sản phẩm nổi bật công khai</p><p class='mt-2 text-sm'>Hãy bổ sung sản phẩm vào org tea-store trong Trevo.</p>",
       );
       return;
     }
@@ -608,11 +680,11 @@ $(async function () {
     const message =
       error instanceof Error
         ? error.message
-        : "Khong ket noi duoc toi Trevo public API.";
+        : "Không kết nối được tới Tea Station API.";
 
     renderTrevoSectionState(
       container,
-      `<p class="text-lg font-medium text-slate-800">Khong tai duoc san pham noi bat</p><p class="mt-2 text-sm">${escapeHtml(message)}</p>`,
+      `<p class="text-lg font-medium text-slate-800">Không tải được sản phẩm noi bat</p><p class="mt-2 text-sm">${escapeHtml(message)}</p>`,
     );
   }
 });
@@ -626,7 +698,7 @@ $(async function () {
     return;
   }
 
-  renderBestSellerState(slider, "<p>Dang tai san pham ban chay tu Trevo...</p>");
+  renderBestSellerState(slider, "<p>Đang tải sản phẩm bán chạy từ Tea Station...</p>");
 
   try {
     const catalog = await loadTrevoCatalog();
@@ -639,7 +711,7 @@ $(async function () {
     if (bestSellers.length === 0) {
       renderBestSellerState(
         slider,
-        "<p class='text-lg font-medium text-slate-800'>Chua co san pham noi bat</p><p class='mt-2 text-sm'>Hay cap nhat san pham public trong org tea-station.</p>",
+        "<p class='text-lg font-medium text-slate-800'>Chưa có sản phẩm nổi bật</p><p class='mt-2 text-sm'>Hãy cập nhật sản phẩm public trong org tea-store.</p>",
       );
       return;
     }
@@ -658,11 +730,11 @@ $(async function () {
     const message =
       error instanceof Error
         ? error.message
-        : "Khong ket noi duoc toi Trevo public API.";
+        : "Không kết nối được tới Tea Station API.";
 
     renderBestSellerState(
       slider,
-      `<p class="text-lg font-medium text-slate-800">Khong tai duoc san pham ban chay</p><p class="mt-2 text-sm">${escapeHtml(message)}</p>`,
+      `<p class="text-lg font-medium text-slate-800">Không tải được sản phẩm ban chay</p><p class="mt-2 text-sm">${escapeHtml(message)}</p>`,
     );
   }
 });
@@ -692,4 +764,8 @@ $(function () {
     mirror: true,
     anchorPlacement: "center-bottom",
   });
+});
+
+$(function () {
+  attachCartHandlers();
 });

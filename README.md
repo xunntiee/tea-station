@@ -1,68 +1,113 @@
-# Landing_Page
+# Tea Station
 
-Landing page nay da duoc noi voi Trevo theo huong frontend-only.
+Tea Station da duoc nang len thanh mini fullstack storefront theo huong gan voi Nexis:
 
-## Cach hoat dong
+- frontend public de khach xem san pham
+- backend rieng cua Tea Station giu secret
+- backend Tea Station goi Trevo de lay catalog, tao don va init QR thanh toan
 
-- `products.html` lay catalog tu `GET /api/public/:orgSlug/products`
-- nut `Dat ngay` chuyen sang `checkout.html`
-- `checkout.html` redirect sang Trevo public order:
-  - `https://app.trevo.studio/{orgSlug}/order?products=productId:qty`
+## Trang thai hien tai
 
-## File env cho phase 1
+- Phase 1: xong
+  - homepage va `products.html` da doc catalog that tu Trevo
+  - data hien theo org `tea-store`
+- Phase 2: xong trong repo
+  - Tea Station co backend rieng (`server/index.mjs`)
+  - frontend goi `GET /api/storefront/catalog` thay vi goi thang Trevo
+  - co `Dockerfile` de deploy chung Azure VM voi Trevo
+- Phase 3: xong trong repo
+  - `checkout.html` tao public order qua Tea Station backend
+  - Tea Station backend xin QR SePay tu Trevo
+  - frontend poll trang thai don hang sau thanh toan
 
-Project nay da ho tro `.env` cho cac bien public cua storefront.
+## Kien truc moi
 
-1. copy `.env.example` thanh `.env`
-2. sua gia tri:
-   - `TREVO_ORG_SLUG`
-   - `TREVO_API_BASE_URL`
-   - `TREVO_FRONTEND_BASE_URL`
-   - `TREVO_DEBUG`
-3. chay `npm run build` hoac `npm run dev`
+1. Browser -> Tea Station (`tea.trevo.studio`)
+2. Tea Station backend -> Trevo public order API
+3. Neu co `TREVO_API_KEY`, Tea Station co the doc order status qua external API
+4. Khong co secret nao nam tren frontend runtime
 
-Script build se tu sinh `runtime-config.js`.
+## Env cua project
+
+### 1. Env public cho frontend
+
+Copy `.env.example` thanh `.env`.
+
+Dung cho:
+
+- `TREVO_ORG_SLUG`
+- `TEA_STATION_API_BASE_URL`
+- `TREVO_API_BASE_URL`
+- `TREVO_FRONTEND_BASE_URL`
+- `TREVO_DEBUG`
 
 Luu y:
 
-- day la config public cho frontend, khong duoc de API key hay secret vao `.env` nay
-- neu khong co `.env`, project van fallback ve gia tri mac dinh
+- file nay la public runtime config
+- khong duoc dat `TREVO_API_KEY` vao day
 
-## File can sua neu doi moi truong
+### 2. Env private cho backend Tea Station
 
-Sua [js/trevo-config.js](./js/trevo-config.js):
+Copy `.env.server.example` thanh `.env.server`.
 
-- `orgSlug`
-- `apiBaseUrl`
-- `frontendBaseUrl`
-- `merchandising.homepageFeatured`
-- `merchandising.bestSellerCarousel`
+Quan trong nhat:
 
-## Chon san pham noi bat
+- `TREVO_API_KEY`
+- `TREVO_API_ORIGIN`
+- `TREVO_PUBLIC_PAYMENT_PROVIDER`
 
-- phase 1 dang uu tien chon san pham qua `preferredSkus` hoac `preferredIds`
-- neu chua dien SKU/ID, he thong se fallback theo `nameIncludes` va `category`
-- cach nhanh nhat:
-  - vao Trevo lay SKU that cua san pham
-  - dien vao `preferredSkus` trong `js/trevo-config.js`
-  - reload landing page la homepage va best-seller se dung dung san pham do
+`TREVO_API_KEY` sinh ra de backend Tea Station noi chuyen an toan voi Trevo theo kieu server-to-server. Day la khac biet quan trong so voi landing page tinh.
 
-## Override nhanh khi test
+## Chay local
 
-Ban co the truyen tham so vao URL:
+```bash
+npm install
+npm run dev
+```
 
-- `?trevo-debug=1` bat catalog inspector
-- `?trevo-org=tea-station` doi org slug tam thoi
-- `?trevo-api=http://127.0.0.1:15000` tro sang API local
-- `?trevo-front=http://127.0.0.1:17617` tro sang frontend Trevo local
-- `?trevo-reset=1` xoa override da luu trong localStorage
+Lenh `dev` se:
 
-## Yeu cau ben Trevo
+- sinh `runtime-config.js`
+- watch Tailwind CSS
+- chay Tea Station backend tai `http://127.0.0.1:3200`
 
-Trong org `tea-station`, can dam bao:
+Health check:
 
-- co `slug` dung
-- co san pham public
-- `Origin storefront cong khai` co domain cua landing page
+```txt
+http://127.0.0.1:3200/api/storefront/health
+```
 
-Neu thieu origin nay, browser se bi chan CORS khi goi public API.
+## Build / publish
+
+```bash
+npm run publish
+```
+
+Lenh nay:
+
+1. sinh `runtime-config.js`
+2. build CSS
+3. tao thu muc `site/`
+
+## API noi bo cua Tea Station
+
+- `GET /api/storefront/health`
+- `GET /api/storefront/catalog`
+- `POST /api/storefront/checkout`
+- `GET /api/storefront/orders/:orderId/status`
+
+## API key cua Trevo dung de lam gi
+
+Trong Tea Station hien tai, `TREVO_API_KEY` duoc de o backend, khong de o frontend.
+
+No phuc vu cho huong phat trien kieu Nexis:
+
+- doc du lieu ERP dang bao ve
+- theo doi order status server-side
+- mo rong sau nay sang customer sync / stock sync / order sync
+
+Neu chi la frontend tinh thi khong nen dat API key, vi se lo secret.
+
+## Deploy production
+
+Xem them [docs/deploy-production.md](./docs/deploy-production.md).
