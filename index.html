@@ -65,7 +65,13 @@
         >
           <!-- Logo -->
           <a href="./" class="flex items-center justify-center flex-none">
-            <img src="./assets/logo.png" alt="logo" class="w-16 h-16" />
+            <img
+              src="./assets/logo.png"
+              alt="logo"
+              class="w-16 h-16"
+              fetchpriority="high"
+              decoding="async"
+            />
             <p class="text-lg capitalize font-lobster text-p-900">
               Tea Station
             </p>
@@ -129,6 +135,8 @@
             src="./assets/hero_img.png"
             alt="hero-img"
             class="h-full 2xl:[mask-image:linear-gradient(to_left,transparent,black_10%)]"
+            fetchpriority="high"
+            decoding="async"
           />
         </div>
 
@@ -233,7 +241,11 @@
               </li>
               <li>|</li>
               <li>
-                <a href="#blackTea" class="tab-link"><span>Trà</span> đen</a>
+                <a href="#blackTea" class="tab-link"><span>Trà</span> Đen</a>
+              </li>
+              <li>|</li>
+              <li>
+                <a href="#herbalTea" class="tab-link"><span>Trà</span> Thảo Mộc</a>
               </li>
               <li>|</li>
             </ul>
@@ -244,6 +256,8 @@
                   src="./assets/product_1.jpg"
                   alt="matcha"
                   class="productImg"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div>
                   <h3>Matcha Magic</h3>
@@ -279,6 +293,8 @@
                   src="./assets/product_2.jpg"
                   alt="whiteTea"
                   class="productImg"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div>
                   <h3>Tinh chất tinh tế từ trà trắng</h3>
@@ -313,6 +329,8 @@
                   src="./assets/product_3.jpg"
                   alt="whiteTea"
                   class="productImg"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div>
                   <h3>Cuộc cách mạng trà ô long</h3>
@@ -345,9 +363,11 @@
             <div id="blackTea">
               <div class="tabContainer">
                 <img
-                  src="./assets/product_4.png"
+                  src="./assets/product_4.jpg"
                   alt="blackTea"
                   class="productImg"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div>
                   <h3>Đánh thức các giác quan của bạn cùng trà đen</h3>
@@ -373,6 +393,32 @@
                 </div>
               </div>
             </div>
+            <div id="herbalTea">
+              <div class="tabContainer">
+                <img
+                  src="./assets/product_2.jpg"
+                  alt="herbalTea"
+                  class="productImg"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div>
+                  <h3>Sự thư giãn tuyệt đối từ thiên nhiên</h3>
+                  <h4>Khám phá sức mạnh chữa lành của các loại thảo mộc</h4>
+                  <p>
+                    Trà thảo mộc mang đến hương vị dịu nhẹ và tinh tế từ các loại hoa, lá, và rễ cây tự nhiên. Không chứa caffeine, đây là thức uống lý tưởng để thưởng thức vào bất kỳ thời điểm nào trong ngày, giúp làm dịu tâm trí, giảm căng thẳng và cải thiện giấc ngủ. Hãy tự thưởng cho mình một khoảnh khắc yên bình với những tách trà thảo mộc thơm ngon để nuôi dưỡng cơ thể từ bên trong.
+                  </p>
+                  <button>
+                    <a
+                      href="./products.html?filter-category=herbal"
+                      class="btn"
+                      >Xem Sản Phẩm Trà Thảo Mộc
+                      <img src="./assets/right-arrow.svg" alt="right-arrow"
+                    /></a>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -386,13 +432,15 @@
         class="relative min-w-full h-[30vh] max-h-[276px] overflow-hidden flex justify-center items-center"
       >
         <video
-          poster="./assets/video.mp4"
+          data-deferred-video
+          preload="none"
           autoplay
           loop
           muted
+          playsinline
           class="absolute min-w-full min-h-full inset-0 -z-10 md:top-[-20%] md:left-[-50%] md:translate-x-1/2"
         >
-          <source src="./assets/video.mp4" type="video/mp4" />
+          <source data-src="./assets/video.mp4" type="video/mp4" />
         </video>
         <p
           class="px-4 text-base tracking-wide text-center text-white md:text-2xl text-shadow-[2px_2px_8px_#000000]"
@@ -415,7 +463,8 @@
         >
           <div
             data-aos="zoom-in"
-            class="feature-card group bg-[url(/assets/benefit_1.jpg)]"
+            data-bg="/assets/benefit_1.jpg"
+            class="feature-card group deferred-bg"
           >
             <div class="feature-filter"></div>
             <h3>Nguồn cung cao cấp</h3>
@@ -438,7 +487,8 @@
           <div
             data-aos="zoom-in"
             data-aos-delay="200"
-            class="feature-card group bg-[url(/assets/benefit_2.jpg)]"
+            data-bg="/assets/benefit_2.jpg"
+            class="feature-card group deferred-bg"
           >
             <div class="feature-filter"></div>
             <h3>Hương vị và pha chế độc đáo</h3>
@@ -456,7 +506,8 @@
           <div
             data-aos="zoom-in"
             data-aos-delay="100"
-            class="feature-card group bg-[url(/assets/benefit_3.jpg)]"
+            data-bg="/assets/benefit_3.jpg"
+            class="feature-card group deferred-bg"
           >
             <div class="feature-filter"></div>
             <h3>Tập trung vào sức khỏe</h3>
@@ -468,7 +519,8 @@
           <div
             data-aos="zoom-in"
             data-aos-delay="200"
-            class="feature-card group bg-[url(/assets/benefit_4.jpg)]"
+            data-bg="/assets/benefit_4.jpg"
+            class="feature-card group deferred-bg"
           >
             <div class="feature-filter"></div>
             <h3>Trải Nghiệm Cá Nhân Hoá</h3>
@@ -618,6 +670,8 @@
               <img
                 src="./assets/products/matcha1.jpg"
                 alt="best-sellers-product"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>
@@ -711,6 +765,8 @@
               <img
                 src="./assets/products/blacktea1.jpg"
                 alt="best-sellers-product"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>
@@ -804,6 +860,8 @@
               <img
                 src="./assets/products/whitetea1.jpg"
                 alt="best-sellers-product"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>
@@ -897,6 +955,8 @@
               <img
                 src="./assets/products/oolong1.jpg"
                 alt="best-sellers-product"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>
@@ -909,7 +969,8 @@
     -------------->
     <section
       id="stats"
-      class="relative mt-20 bg-fixed bg-center bg-no-repeat bg-cover bg-[url(/assets/statsBg.jpg)]"
+      data-bg="/assets/statsBg.jpg"
+      class="relative mt-20 bg-center bg-no-repeat bg-cover deferred-bg"
     >
       <!-- Overlay -->
       <div class="absolute inset-0 bg-p-950/95"></div>
@@ -1001,7 +1062,8 @@
     <section id="story">
       <!-- Lớp chứa hình nền -->
       <div
-        class="flex justify-end h-screen max-h-[1100px] p-0 w-fulll max-w-none bg-[url(/assets/aboutUsImg.jpg)] bg-no-repeat bg-center bg-cover"
+        data-bg="/assets/aboutUsImg.jpg"
+        class="flex justify-end h-screen max-h-[1100px] p-0 w-fulll max-w-none bg-no-repeat bg-center bg-cover deferred-bg"
       >
         <!-- Lớp overlay chiếm 2/3 màn hình -->
         <div class="w-full h-full lg:w-2/3 bg-p-950/60 p-9">
@@ -1127,6 +1189,8 @@
               src="./assets/contact.png"
               alt="decor"
               class="absolute -bottom-20 -right-20 w-[400px] opacity-15 -z-10"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         </div>

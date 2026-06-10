@@ -10,6 +10,22 @@ import {
 } from "./trevo-client.mjs";
 
 const app = express();
+const immutableStaticOptions = {
+  etag: true,
+  lastModified: true,
+  immutable: true,
+  maxAge: "30d",
+};
+const regularStaticOptions = {
+  etag: true,
+  lastModified: true,
+  maxAge: "7d",
+};
+
+function sendHtmlFile(res, filePath) {
+  res.set("Cache-Control", "no-cache");
+  res.sendFile(filePath);
+}
 
 const checkoutSchema = z.object({
   customerName: z
@@ -121,31 +137,35 @@ app.get("/runtime-config.js", (_req, res) => {
   };
 
   res
+    .set("Cache-Control", "no-cache")
     .type("application/javascript")
     .send(`window.__TREVO_RUNTIME_CONFIG__ = ${JSON.stringify(runtimeConfig, null, 2)};\n`);
 });
 
 function mountProjectRootStatic() {
-  app.use("/assets", express.static(path.join(serverEnv.projectRoot, "assets")));
-  app.use("/css", express.static(path.join(serverEnv.projectRoot, "css")));
-  app.use("/dist", express.static(path.join(serverEnv.projectRoot, "dist")));
-  app.use("/js", express.static(path.join(serverEnv.projectRoot, "js")));
+  app.use("/assets", express.static(path.join(serverEnv.projectRoot, "assets"), immutableStaticOptions));
+  app.use("/css", express.static(path.join(serverEnv.projectRoot, "css"), regularStaticOptions));
+  app.use("/dist", express.static(path.join(serverEnv.projectRoot, "dist"), regularStaticOptions));
+  app.use("/js", express.static(path.join(serverEnv.projectRoot, "js"), regularStaticOptions));
   app.get("/", (_req, res) => {
-    res.sendFile(path.join(serverEnv.projectRoot, "index.html"));
+    sendHtmlFile(res, path.join(serverEnv.projectRoot, "index.html"));
   });
   app.get("/index.html", (_req, res) => {
-    res.sendFile(path.join(serverEnv.projectRoot, "index.html"));
+    sendHtmlFile(res, path.join(serverEnv.projectRoot, "index.html"));
   });
   app.get("/products.html", (_req, res) => {
-    res.sendFile(path.join(serverEnv.projectRoot, "products.html"));
+    sendHtmlFile(res, path.join(serverEnv.projectRoot, "products.html"));
   });
   app.get("/checkout.html", (_req, res) => {
-    res.sendFile(path.join(serverEnv.projectRoot, "checkout.html"));
+    sendHtmlFile(res, path.join(serverEnv.projectRoot, "checkout.html"));
   });
 }
 
 function mountPublishedSite() {
-  app.use(express.static(serverEnv.siteDir));
+  app.use("/assets", express.static(path.join(serverEnv.siteDir, "assets"), immutableStaticOptions));
+  app.use("/css", express.static(path.join(serverEnv.siteDir, "css"), regularStaticOptions));
+  app.use("/dist", express.static(path.join(serverEnv.siteDir, "dist"), regularStaticOptions));
+  app.use("/js", express.static(path.join(serverEnv.siteDir, "js"), regularStaticOptions));
   app.get("*", (req, res, next) => {
     if (req.path.startsWith("/api/")) {
       next();
@@ -153,6 +173,7 @@ function mountPublishedSite() {
     }
 
     const normalizedPath = req.path === "/" ? "/index.html" : req.path;
+    res.set("Cache-Control", "no-cache");
     res.sendFile(path.join(serverEnv.siteDir, normalizedPath), (error) => {
       if (error) {
         next();

@@ -24,6 +24,7 @@ export function normalizeProductCategory(value) {
   if (normalized.includes("oolong") || normalized.includes("o long")) return "oolong";
   if (normalized.includes("black") || normalized.includes("den")) return "blacktea";
   if (normalized.includes("white") || normalized.includes("trang")) return "whitetea";
+  if (normalized.includes("herbal") || normalized.includes("thao moc")) return "herbal";
   return normalized.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "other";
 }
 

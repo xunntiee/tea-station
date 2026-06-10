@@ -64,7 +64,13 @@
         >
           <!-- Logo -->
           <a href="./" class="flex items-center justify-center flex-none">
-            <img src="./assets/logo.png" alt="logo" class="w-16 h-16" />
+            <img
+              src="./assets/logo.png"
+              alt="logo"
+              class="w-16 h-16"
+              fetchpriority="high"
+              decoding="async"
+            />
             <p class="text-lg capitalize font-lobster text-p-900">
               Tea Station
             </p>
@@ -115,10 +121,12 @@
       <main class="container mt-20">
         <!-- Banner -->
         <img
-        data-aos="flip-down"
+          data-aos="flip-down"
           src="./assets/banners/banner1.jpg"
           alt="products banner"
           class="w-full h-[350px] object-cover shadow-xl"
+          fetchpriority="high"
+          decoding="async"
         />
 
         <!-- tiêu đề -->
@@ -168,6 +176,11 @@
             id="f-matcha"
             href="?filter-category=matcha"
             ><span class="hidden md:inline">Trà</span> Matcha</a
+          >
+          <a
+            id="f-herbal"
+            href="?filter-category=herbal"
+            ><span class="hidden md:inline">Trà</span> Thảo Mộc</a
           >
         </div>
 

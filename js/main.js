@@ -26,6 +26,87 @@ async function loadTrevoCatalog() {
   return trevoCatalogPromise;
 }
 
+function applyDeferredBackground(node) {
+  if (!(node instanceof HTMLElement) || node.dataset.bgLoaded === "1") {
+    return;
+  }
+
+  const backgroundUrl = node.dataset.bg?.trim();
+  if (!backgroundUrl) {
+    return;
+  }
+
+  node.style.backgroundImage = `url(${backgroundUrl})`;
+  node.dataset.bgLoaded = "1";
+}
+
+function applyDeferredVideo(node) {
+  if (!(node instanceof HTMLVideoElement) || node.dataset.videoLoaded === "1") {
+    return;
+  }
+
+  const sourceNodes = Array.from(node.querySelectorAll("source[data-src]"));
+  sourceNodes.forEach((sourceNode) => {
+    const sourceUrl = sourceNode.dataset.src?.trim();
+    if (!sourceUrl) {
+      return;
+    }
+
+    sourceNode.src = sourceUrl;
+    sourceNode.removeAttribute("data-src");
+  });
+
+  node.load();
+  node.dataset.videoLoaded = "1";
+
+  if (node.autoplay) {
+    node.play().catch(() => {
+      // Ignore autoplay restrictions.
+    });
+  }
+}
+
+function initDeferredMedia() {
+  const deferredNodes = [
+    ...document.querySelectorAll("[data-bg]"),
+    ...document.querySelectorAll("[data-deferred-video]"),
+  ];
+
+  if (deferredNodes.length === 0) {
+    return;
+  }
+
+  const loadNode = (node) => {
+    if (node instanceof HTMLVideoElement) {
+      applyDeferredVideo(node);
+      return;
+    }
+
+    applyDeferredBackground(node);
+  };
+
+  if (!("IntersectionObserver" in window)) {
+    deferredNodes.forEach(loadNode);
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries, currentObserver) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) {
+          return;
+        }
+
+        loadNode(entry.target);
+        currentObserver.unobserve(entry.target);
+      });
+    },
+    { rootMargin: "240px 0px" },
+  );
+
+  deferredNodes.forEach((node) => observer.observe(node));
+}
+
 /* ===============
     Navigation
 =================== */
@@ -159,6 +240,8 @@ function getBestSellerPitch(product) {
       return "Nhẹ nhàng, tinh tế, phù hợp nghỉ ngơi và thư giãn.";
     case "blacktea":
       return "Đậm vị, mạnh mẽ và hợp với người thích hương vị rõ nét.";
+    case "herbal":
+      return "Sự thư giãn tuyệt đối từ thiên nhiên, không chứa caffeine.";
     default:
       return "Lựa chọn nổi bật trong catalog Tea Station.";
   }
@@ -200,7 +283,7 @@ function renderAddToCartButton(product, variant = "light") {
   `;
 }
 
-const featuredCategoryOrder = ["matcha", "oolong", "whitetea", "blacktea"];
+const featuredCategoryOrder = ["matcha", "oolong", "whitetea", "blacktea", "herbal"];
 
 function matchesMerchandisingRule(product, rule) {
   if (!rule) {
@@ -491,6 +574,9 @@ function setActiveFilterLink() {
     case "matcha":
       document.getElementById("f-matcha")?.classList.add("activeFilter");
       break;
+    case "herbal":
+      document.getElementById("f-herbal")?.classList.add("activeFilter");
+      break;
     default:
       document.getElementById("f-all")?.classList.add("activeFilter");
       break;
@@ -749,8 +835,11 @@ $(function () {
     return;
   }
 
+  const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  const isSmallScreen = window.innerWidth < 768;
+
   window.AOS.init({
-    disable: false,
+    disable: Boolean(prefersReducedMotion || isSmallScreen),
     startEvent: "DOMContentLoaded",
     initClassName: "aos-init",
     animatedClassName: "aos-animate",
@@ -762,12 +851,13 @@ $(function () {
     delay: 50,
     duration: 700,
     easing: "ease-in-out",
-    once: false,
-    mirror: true,
+    once: true,
+    mirror: false,
     anchorPlacement: "center-bottom",
   });
 });
 
 $(function () {
   attachCartHandlers();
+  initDeferredMedia();
 });
