@@ -9,6 +9,25 @@ Landing page nay da duoc noi voi Trevo theo huong frontend-only.
 - `checkout.html` redirect sang Trevo public order:
   - `https://app.trevo.studio/{orgSlug}/order?products=productId:qty`
 
+## File env cho phase 1
+
+Project nay da ho tro `.env` cho cac bien public cua storefront.
+
+1. copy `.env.example` thanh `.env`
+2. sua gia tri:
+   - `TREVO_ORG_SLUG`
+   - `TREVO_API_BASE_URL`
+   - `TREVO_FRONTEND_BASE_URL`
+   - `TREVO_DEBUG`
+3. chay `npm run build` hoac `npm run dev`
+
+Script build se tu sinh `runtime-config.js`.
+
+Luu y:
+
+- day la config public cho frontend, khong duoc de API key hay secret vao `.env` nay
+- neu khong co `.env`, project van fallback ve gia tri mac dinh
+
 ## File can sua neu doi moi truong
 
 Sua [js/trevo-config.js](./js/trevo-config.js):

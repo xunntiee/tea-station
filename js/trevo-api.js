@@ -54,15 +54,22 @@ export function buildTrevoCheckoutUrl(items) {
 }
 
 export async function fetchTrevoPublicCatalog() {
-  const response = await fetch(
-    `${trevoConfig.apiBaseUrl}/api/public/${trevoConfig.orgSlug}/products`,
-    {
-      credentials: "omit",
-      headers: {
-        Accept: "application/json",
+  let response;
+  try {
+    response = await fetch(
+      `${trevoConfig.apiBaseUrl}/api/public/${trevoConfig.orgSlug}/products`,
+      {
+        credentials: "omit",
+        headers: {
+          Accept: "application/json",
+        },
       },
-    },
-  );
+    );
+  } catch (error) {
+    throw new Error(
+      `Failed to fetch Trevo public API from ${trevoConfig.apiBaseUrl}. Check CORS/origin allowlist for ${trevoConfig.landingOrigin}.`,
+    );
+  }
 
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
@@ -76,6 +83,5 @@ export async function fetchTrevoPublicCatalog() {
     throw new Error(message);
   }
 
-  return payload;
+  return payload?.data ?? payload;
 }
-

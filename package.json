@@ -1,6 +1,8 @@
 {
   "scripts": {
+    "prebuild": "node ./scripts/generate-runtime-config.mjs",
     "build": "tailwindcss -i ./css/main.css -o ./dist/output.css",
+    "predev": "node ./scripts/generate-runtime-config.mjs",
     "dev": "tailwindcss -i ./css/main.css -o ./dist/output.css --watch"
   },
   "dependencies": {

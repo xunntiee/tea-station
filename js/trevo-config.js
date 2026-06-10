@@ -1,3 +1,4 @@
+const runtimeConfig = window.__TREVO_RUNTIME_CONFIG__ || {};
 const isLocalhost = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
 const searchParams = new URLSearchParams(window.location.search);
 
@@ -74,15 +75,19 @@ function readDebugFlag() {
 
 clearTrevoOverridesIfRequested();
 
-const defaultApiBaseUrl = isLocalhost
-  ? "http://127.0.0.1:15000"
-  : "https://api.trevo.studio";
-const defaultFrontendBaseUrl = isLocalhost
-  ? "http://127.0.0.1:17617"
-  : "https://app.trevo.studio";
+const defaultApiBaseUrl =
+  runtimeConfig.apiBaseUrl ||
+  (isLocalhost ? "http://127.0.0.1:15000" : "https://api.trevo.studio");
+const defaultFrontendBaseUrl =
+  runtimeConfig.frontendBaseUrl ||
+  (isLocalhost ? "http://127.0.0.1:17617" : "https://app.trevo.studio");
 
 export const trevoConfig = {
-  orgSlug: readPersistedOverride("trevo-org", STORAGE_KEYS.orgSlug, "tea-station"),
+  orgSlug: readPersistedOverride(
+    "trevo-org",
+    STORAGE_KEYS.orgSlug,
+    runtimeConfig.orgSlug || "tea-station",
+  ),
   apiBaseUrl: readPersistedOverride(
     "trevo-api",
     STORAGE_KEYS.apiBaseUrl,
@@ -95,7 +100,9 @@ export const trevoConfig = {
   ),
   landingOrigin: window.location.origin.replace(/\/$/, ""),
   debug: {
-    enabled: readDebugFlag(),
+    enabled: searchParams.get("trevo-debug") !== null
+      ? readDebugFlag()
+      : shouldEnableFromValue(runtimeConfig.debug) || readDebugFlag(),
   },
   merchandising: {
     // Fill preferredSkus or preferredIds after the Tea Station org has final products in Trevo.
