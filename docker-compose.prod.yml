@@ -18,4 +18,14 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+    networks:
+      default:
+      edge:
+        aliases:
+          - tea-station
     restart: unless-stopped
+
+networks:
+  edge:
+    name: trevo-edge
+    external: true
