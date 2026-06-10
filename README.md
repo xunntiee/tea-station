@@ -14,7 +14,7 @@ Tea Station da duoc nang len thanh mini fullstack storefront theo huong gan voi 
 - Phase 2: xong trong repo
   - Tea Station co backend rieng (`server/index.mjs`)
   - frontend goi `GET /api/storefront/catalog` thay vi goi thang Trevo
-  - co `Dockerfile` de deploy chung Azure VM voi Trevo
+  - co `Dockerfile` va `docker-compose.prod.yml` de deploy rieng tren Azure VM
 - Phase 3: xong trong repo
   - `checkout.html` tao public order qua Tea Station backend
   - Tea Station backend xin QR SePay tu Trevo
@@ -23,8 +23,8 @@ Tea Station da duoc nang len thanh mini fullstack storefront theo huong gan voi 
 ## Kien truc moi
 
 1. Browser -> Tea Station (`tea.trevo.studio`)
-2. Tea Station backend -> Trevo public order API
-3. Neu co `TREVO_API_KEY`, Tea Station co the doc order status qua external API
+2. Tea Station backend -> Trevo public/external API
+3. Trevo resolve organization theo `tea-store` hoac API key
 4. Khong co secret nao nam tren frontend runtime
 
 ## Env cua project
@@ -57,6 +57,15 @@ Quan trong nhat:
 - `TREVO_PUBLIC_PAYMENT_PROVIDER`
 
 `TREVO_API_KEY` sinh ra de backend Tea Station noi chuyen an toan voi Trevo theo kieu server-to-server. Day la khac biet quan trong so voi landing page tinh.
+
+## Deploy boundary
+
+Tea Station khong nam trong `docker-compose.prod.yml` cua Trevo.
+
+- Trevo deploy core ERP/API: DB, Redis, backend, frontend, Caddy.
+- Tea Station deploy bang `docker-compose.prod.yml` rieng cua repo nay.
+- API key cua Trevo chi dat trong `.env.server` cua Tea Station.
+- Reverse proxy cho `tea.trevo.studio` la ha tang deploy, khong phai bien Trevo backend.
 
 ## Chay local
 

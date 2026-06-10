@@ -54,6 +54,14 @@ function asPort(value, fallbackValue) {
   return parsed;
 }
 
+function asBoolean(value, fallbackValue = false) {
+  if (value == null || value === "") {
+    return fallbackValue;
+  }
+
+  return ["1", "true", "yes", "on"].includes(String(value).toLowerCase());
+}
+
 const mergedFileEnv = {
   ...parseEnvFile(path.join(projectRoot, ".env")),
   ...parseEnvFile(path.join(projectRoot, ".env.server")),
@@ -83,9 +91,11 @@ export const serverEnv = {
     sourceEnv.TREVO_FRONTEND_BASE_URL,
     "https://app.trevo.studio",
   ),
+  storefrontApiBaseUrl: normalizeBaseUrl(sourceEnv.TEA_STATION_API_BASE_URL, ""),
   trevoApiOrigin: sourceEnv.TREVO_API_ORIGIN || "https://tea.trevo.studio",
   trevoApiKey: sourceEnv.TREVO_API_KEY || "",
   publicPaymentProvider: sourceEnv.TREVO_PUBLIC_PAYMENT_PROVIDER || "sepay",
+  debug: asBoolean(sourceEnv.TREVO_DEBUG, false),
 };
 
 export function hasTrevoApiKey() {

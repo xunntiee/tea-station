@@ -111,14 +111,25 @@ app.get("/api/storefront/orders/:orderId/status", async (req, res, next) => {
   }
 });
 
+app.get("/runtime-config.js", (_req, res) => {
+  const runtimeConfig = {
+    orgSlug: serverEnv.trevoOrgSlug,
+    storefrontApiBaseUrl: serverEnv.storefrontApiBaseUrl,
+    trevoApiBaseUrl: serverEnv.trevoApiBaseUrl,
+    frontendBaseUrl: serverEnv.trevoFrontendBaseUrl,
+    debug: serverEnv.debug,
+  };
+
+  res
+    .type("application/javascript")
+    .send(`window.__TREVO_RUNTIME_CONFIG__ = ${JSON.stringify(runtimeConfig, null, 2)};\n`);
+});
+
 function mountProjectRootStatic() {
   app.use("/assets", express.static(path.join(serverEnv.projectRoot, "assets")));
   app.use("/css", express.static(path.join(serverEnv.projectRoot, "css")));
   app.use("/dist", express.static(path.join(serverEnv.projectRoot, "dist")));
   app.use("/js", express.static(path.join(serverEnv.projectRoot, "js")));
-  app.get("/runtime-config.js", (_req, res) => {
-    res.sendFile(path.join(serverEnv.projectRoot, "runtime-config.js"));
-  });
   app.get("/", (_req, res) => {
     res.sendFile(path.join(serverEnv.projectRoot, "index.html"));
   });

@@ -1,0 +1,21 @@
+services:
+  tea-station:
+    image: ${TEA_STATION_IMAGE:-tea-station:local}
+    build:
+      context: .
+    container_name: tea-station-prod
+    env_file:
+      - ${TEA_STATION_ENV_FILE:-.env.server}
+    environment:
+      NODE_ENV: production
+      PORT: 3200
+      SITE_DIR: /app/site
+    ports:
+      - "127.0.0.1:${HOST_PORT:-3200}:3200"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3200/api/storefront/health >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped

@@ -1,36 +1,36 @@
-# Deploy Tea Station With Trevo On The Same Azure VM
+# Deploy Tea Station With Trevo
 
-Mo hinh production sau khi nang cap:
+Tea Station is a separate storefront app. It connects to Trevo through
+org-scoped API keys, but it is not part of the Trevo Docker Compose stack.
+
+Production shape:
 
 - `app.trevo.studio` -> Trevo frontend
 - `api.trevo.studio` -> Trevo backend
 - `tea.trevo.studio` -> Tea Station backend + static storefront
 
-Khac voi phase cu:
+## 1. Prepare Trevo
 
-- khong con phuc vu Tea Station bang static mount trong Caddy
-- Caddy se reverse proxy `tea.trevo.studio` vao container `tea-station`
+In Trevo:
 
-## 1. Chuan bi repo Tea Station
+1. Create or select the Tea Station organization.
+2. Set public slug, for example `tea-store`.
+3. Create an API key for Tea Station.
+4. Set allowed origin to `https://tea.trevo.studio`.
+5. Copy the raw API key once.
 
-Trong repo Tea Station:
+The API key belongs to Tea Station backend env, not Trevo `.env.production`.
 
-```bash
-npm install
-```
+## 2. Prepare Tea Station Env
 
-Copy env:
+In the Tea Station repo:
 
 ```bash
 cp .env.example .env
 cp .env.server.example .env.server
 ```
 
-### `.env`
-
-Day la env public cho frontend.
-
-Vi du:
+`.env` is public runtime config for browser-side code:
 
 ```env
 TREVO_ORG_SLUG=tea-store
@@ -40,13 +40,7 @@ TREVO_FRONTEND_BASE_URL=https://app.trevo.studio
 TREVO_DEBUG=false
 ```
 
-`TEA_STATION_API_BASE_URL` de trong production cung duoc, vi frontend se goi same-origin.
-
-### `.env.server`
-
-Day la env private cua backend Tea Station.
-
-Vi du:
+`.env.server` is private backend config:
 
 ```env
 PORT=3200
@@ -60,89 +54,90 @@ TREVO_API_KEY=trv_xxx
 TREVO_PUBLIC_PAYMENT_PROVIDER=sepay
 ```
 
-`TREVO_API_KEY` la khoa sinh trong Trevo -> API Keys.
+Do not commit `.env` or `.env.server`.
 
-## 2. Push Tea Station len GitHub
+## 3. Deploy On The Same Azure VM
 
-```bash
-git add .
-git commit -m "Upgrade Tea Station to fullstack storefront"
-git push origin main
-```
-
-## 3. Pull Tea Station tren Azure VM
-
-SSH vao VM:
+Clone/pull Tea Station on the VM:
 
 ```bash
+cd ~
+git clone git@github.com:<your-user>/<tea-station-repo>.git tea-station
 cd ~/tea-station
-git pull origin main
+cp .env.example .env
+cp .env.server.example .env.server
+nano .env.server
 ```
 
-Khong can chay app tay bang PM2/systemd neu deploy bang compose chung voi Trevo.
-
-## 4. Cap nhat Trevo production config
-
-Trong `~/Trevo/.env.production`, them hoac sua:
-
-```env
-LANDING_DOMAIN=tea.trevo.studio
-LANDING_APP_DIR=/home/azureuser/tea-station
-LANDING_ORG_SLUG=tea-store
-LANDING_STOREFRONT_NAME=Tea Station
-LANDING_TREVO_API_KEY=trv_xxx
-LANDING_PAYMENT_PROVIDER=sepay
-```
-
-Giai thich:
-
-- `LANDING_APP_DIR`: duong dan repo Tea Station tren VM
-- `LANDING_TREVO_API_KEY`: API key cua org Tea Station trong Trevo
-- `LANDING_ORG_SLUG`: slug org storefront
-
-## 5. Pull Trevo va rebuild compose
-
-Trong repo Trevo:
+Start Tea Station:
 
 ```bash
-cd ~/Trevo
-git pull origin main
-docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
+docker compose --env-file .env.server -f docker-compose.prod.yml up -d --build
 ```
 
-Sau lenh nay:
+This exposes Tea Station only on the VM loopback interface:
 
-- `backend` = Trevo API
-- `frontend` = Trevo app
-- `tea-station` = Tea Station backend
-- `caddy` = reverse proxy cho ca 3 subdomain
+```txt
+127.0.0.1:3200 -> tea-station container
+```
 
-## 6. DNS
+That keeps the app private until an edge proxy routes `tea.trevo.studio` to it.
 
-Tai Name.com:
+## 4. Reverse Proxy
 
-- `A app.trevo.studio -> IP Azure`
-- `A api.trevo.studio -> IP Azure`
-- `A tea.trevo.studio -> IP Azure`
+Only one process can bind host ports `80` and `443`. If Trevo Caddy is already
+using those ports, do not start another public Caddy for Tea Station.
 
-Ca 3 cung co the tro ve cung 1 IP, Caddy se tach theo hostname.
+Recommended options:
 
-## 7. Kiem tra sau deploy
+- Use one shared edge Caddy outside app repos and proxy each hostname.
+- Or temporarily add a host-level Caddy route for `tea.trevo.studio` to
+  `127.0.0.1:3200`.
+
+Example host-level Caddy route:
+
+```caddyfile
+tea.trevo.studio {
+	encode gzip zstd
+	reverse_proxy 127.0.0.1:3200
+}
+```
+
+This proxy wiring is deployment infrastructure. It should not store
+`TREVO_API_KEY`, `TREVO_ORG_SLUG`, or other Tea Station business config inside
+Trevo env.
+
+## 5. DNS
+
+At the domain provider:
+
+- `A app.trevo.studio -> Azure VM IP`
+- `A api.trevo.studio -> Azure VM IP`
+- `A tea.trevo.studio -> Azure VM IP`
+
+The reverse proxy separates traffic by hostname.
+
+## 6. Verify
+
+```bash
+curl http://127.0.0.1:3200/api/storefront/health
+curl https://tea.trevo.studio/api/storefront/health
+curl https://api.trevo.studio/api/public/tea-store/products
+```
+
+Then open:
 
 - `https://tea.trevo.studio`
 - `https://tea.trevo.studio/products.html`
 - `https://tea.trevo.studio/checkout.html`
-- `https://tea.trevo.studio/api/storefront/health`
-- `https://api.trevo.studio/api/public/tea-store/products`
 
-## 8. Khi nao can Trevo API key
+## 7. Update Release
 
-Neu chi muon browser xem catalog public, API key khong bat buoc.
+```bash
+cd ~/tea-station
+git pull origin main
+docker compose --env-file .env.server -f docker-compose.prod.yml up -d --build
+```
 
-Nhung neu muon di theo huong Nexis/fullstack:
-
-- backend Tea Station giu secret
-- backend Tea Station doc protected ERP endpoints
-- co dat nen cho customer/order sync sau nay
-
-thi nen co `LANDING_TREVO_API_KEY`.
+Use this command after each Tea Station code change. Trevo does not need a
+redeploy unless the Trevo API itself changed.
