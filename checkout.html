@@ -3,163 +3,330 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
     <title>Tea Station Checkout</title>
+    <link rel="icon" type="image/png" href="./assets/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lobster&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/showHideNav.css" />
     <link rel="stylesheet" href="./dist/output.css" />
     <script src="./runtime-config.js"></script>
     <script type="module" src="./js/checkout.js" defer></script>
   </head>
-  <body class="min-h-screen bg-gradient-to-br from-[#f5efe6] via-white to-[#efe6d5] text-slate-900">
-    <main class="mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-6 py-16">
-      <div class="rounded-[2rem] border border-black/10 bg-white/85 p-8 shadow-2xl shadow-black/5 backdrop-blur">
-        <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div class="max-w-2xl">
-            <p class="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-700">Tea Station Checkout</p>
-            <h1 class="mt-4 text-3xl font-semibold">Tạo đơn và nhận QR thanh toán</h1>
-            <p id="checkout-message" class="mt-3 text-sm leading-6 text-slate-600">
-              Đang tải thông tin sản phẩm từ Tea Station.
+  <body class="min-h-screen bg-slate-50 text-slate-800 font-inter">
+
+    <!-- Navigation (matches homepage) -->
+    <header class="relative z-50">
+      <div class="flex items-center justify-center navbar">
+        <div class="max-w-[1536px] w-full py-4 px-4 md:py-10 md:px-[72px] flex items-center justify-between">
+          <!-- Logo -->
+          <a href="/" class="flex items-center justify-center flex-none">
+            <img
+              src="./assets/logo.png"
+              alt="logo"
+              class="w-16 h-16"
+              fetchpriority="high"
+              decoding="async"
+            />
+            <p class="text-lg capitalize font-lobster text-p-900">
+              Tea Station
             </p>
-            <p id="checkout-source" class="mt-2 text-xs uppercase tracking-[0.28em] text-slate-400"></p>
+          </a>
+
+          <!-- Nav Links -->
+          <nav class="items-center justify-end hidden w-full gap-4 lg:flex lg:gap-8">
+            <a href="/products" class="navLink"> Sản Phẩm </a>
+            <a href="/#story" class="navLink"> Giới Thiệu </a>
+            <a href="/#contact" class="navLink"> Liên Hệ </a>
+            <a
+              href="/checkout"
+              data-cart-link
+              aria-label="Gio hang"
+              title="Gio hang"
+              class="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-5 w-5"
+                aria-hidden="true"
+              >
+                <circle cx="9" cy="20" r="1"></circle>
+                <circle cx="18" cy="20" r="1"></circle>
+                <path d="M3 4h2l2.4 10.5a1 1 0 0 0 1 .8h9.9a1 1 0 0 0 1-.8L21 7H7"></path>
+              </svg>
+              <span class="sr-only" data-cart-label>Gio hang</span>
+              <span
+                data-cart-count
+                class="absolute -right-1 -top-1 inline-flex hidden h-5 min-w-5 items-center justify-center rounded-full bg-p-900 px-1.5 text-[10px] font-semibold leading-none text-white"
+                >0</span
+              >
+            </a>
+          </nav>
+
+          <!-- Hamburger Icon -->
+          <div class="block cursor-pointer lg:hidden" id="toggle_btn">
+            <img
+              src="./assets/Menu Icon.svg"
+              alt="hamburger icon"
+              class="size-5"
+            />
           </div>
 
-          <aside class="w-full rounded-[1.5rem] border border-black/5 bg-slate-50 p-5 lg:max-w-sm">
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Tóm tắt</p>
-            <div class="mt-4 flex items-center justify-between text-sm text-slate-600">
-              <span>Số lượng sản phẩm</span>
-              <strong id="checkout-cart-count" class="text-slate-900">0</strong>
+          <!-- Mobile Menu -->
+          <div class="dropdown-menu lg:hidden">
+            <a href="/products" class="navLink mobileNavLink">
+              Sản Phẩm
+            </a>
+            <a href="/#story" class="navLink mobileNavLink"> Giới Thiệu </a>
+            <a href="/#contact" class="navLink mobileNavLink"> Liên Hệ </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-4 pt-28 pb-8 md:pt-36 md:pb-16">
+
+      <!-- Title & Header -->
+      <div class="mb-12 text-center">
+        <h1 class="font-lobster text-5xl text-p-900 tracking-wide">Đặt Hàng</h1>
+        <p id="checkout-message" class="hidden"></p>
+        <p id="checkout-source" class="mt-2 text-xs uppercase tracking-[0.28em] text-slate-400"></p>
+        <!-- hidden elements to support legacy checkout.js bindings -->
+        <button id="checkout-continue" class="hidden"></button>
+      </div>
+
+      <!-- Main Layout Card -->
+      <div class="bg-white rounded-xl border border-slate-200/60 p-6 md:p-10 shadow-sm max-w-6xl mx-auto">
+        <div class="grid gap-10 lg:grid-cols-[1.3fr_0.7fr]">
+
+          <!-- LEFT COLUMN: Product Cart Table -->
+          <div class="flex flex-col">
+            <h2 class="font-lobster text-3xl text-p-900 border-b border-slate-100 pb-4 mb-6 uppercase tracking-wide">
+              Chi tiết giỏ hàng
+            </h2>
+
+            <!-- Desktop Headers (Hidden on Mobile) -->
+            <div class="hidden md:grid md:grid-cols-[3.2fr_1.2fr_1.2fr_1.2fr] border-b border-slate-200 pb-3 text-sm font-bold uppercase tracking-wider text-slate-800">
+              <div>Sản phẩm</div>
+              <div class="text-right pr-4">Giá</div>
+              <div class="text-center">Số lượng</div>
+              <div class="text-right">Tạm tính</div>
             </div>
-            <div class="mt-3 flex items-center justify-between text-sm text-slate-600">
-              <span>Tạm tính</span>
-              <strong id="checkout-total" class="text-slate-900">0 đ</strong>
+
+            <!-- Checkout Items Container -->
+            <div id="checkout-items" class="divide-y divide-slate-100 min-h-[150px]">
+              <!-- Dynamically populated via JS -->
             </div>
-            <div class="mt-6 flex flex-col gap-3">
-              <button
-                id="checkout-continue"
-                type="submit"
-                form="checkout-form"
-                class="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
-              >
-                Tạo đơn & lấy QR
-              </button>
-              <button
-                id="checkout-clear"
-                type="button"
-                class="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-              >
-                Xóa giỏ hàng
-              </button>
+
+            <!-- Action Buttons below product list -->
+            <div class="mt-8 flex flex-wrap gap-4 border-t border-slate-200 pt-6 justify-between items-center">
               <a
-                href="./products.html"
-                class="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                href="/products"
+                class="inline-flex items-center justify-center border border-slate-800 px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-800 transition hover:bg-slate-50"
               >
-                Quay lại sản phẩm
+                ← Tiếp tục xem sản phẩm
               </a>
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  onclick="window.location.reload();"
+                  class="inline-flex items-center justify-center bg-[#1e293b] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-slate-800 cursor-pointer"
+                >
+                  Cập nhật giỏ hàng
+                </button>
+                <button
+                  id="checkout-clear"
+                  type="button"
+                  class="inline-flex items-center justify-center border border-rose-300 text-rose-700 bg-rose-50 px-4 py-3.5 text-xs font-bold uppercase tracking-wider transition hover:bg-rose-100 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Xóa giỏ hàng
+                </button>
+              </div>
             </div>
+          </div>
+
+          <!-- RIGHT COLUMN: Cart Totals & Billing Info -->
+          <aside class="space-y-8 lg:border-l lg:border-slate-100 lg:pl-10">
+            <!-- Coupon & Summary card -->
+            <div class="rounded-xl border border-slate-200 bg-slate-50/50 p-6">
+
+              <!-- Coupon Codes Section -->
+              <div class="mb-8 border-b border-slate-200 pb-6">
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Mã giảm giá của chúng tôi</p>
+                <div class="flex flex-wrap gap-3 mb-4">
+                  <button type="button" data-coupon="STATION5" class="coupon-ticket">
+                    STATION5
+                  </button>
+                  <button type="button" data-coupon="TEASTATION10" class="coupon-ticket">
+                    TEASTATION10
+                  </button>
+                  <button type="button" data-coupon="FREESHIP" class="coupon-ticket">
+                    FREESHIP
+                  </button>
+                </div>
+
+                <!-- "Chọn hoặc nhập ưu đãi" Row -->
+                <div class="relative flex items-center bg-slate-100 rounded-xl px-4 py-3 border border-slate-200">
+                  <div class="flex items-center justify-center bg-rose-500 text-white rounded-md p-1.5 mr-3 shadow-sm shadow-rose-200">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+                    </svg>
+                  </div>
+                  <input
+                    id="coupon-input"
+                    type="text"
+                    placeholder="Chọn hoặc nhập ưu đãi"
+                    class="w-full text-sm outline-none bg-transparent placeholder-slate-500 text-slate-800 font-semibold"
+                  />
+                  <button type="button" id="apply-coupon-btn" class="text-slate-500 hover:text-slate-800 transition ml-2 whitespace-nowrap">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+                <p id="coupon-message" class="text-xs mt-2 font-medium hidden"></p>
+              </div>
+
+              <!-- Cart Totals Title -->
+              <h3 class="font-lobster text-2xl text-p-900 border-b border-slate-200 pb-3 mb-6 uppercase tracking-wide">
+                Tổng cộng giỏ hàng
+              </h3>
+
+              <div class="space-y-4 text-sm">
+                <div class="flex items-center justify-between text-slate-600">
+                  <span>Số lượng sản phẩm</span>
+                  <strong id="checkout-cart-count" class="text-slate-900 font-bold">0</strong>
+                </div>
+                <div class="flex items-center justify-between text-slate-600">
+                  <span>Tạm tính</span>
+                  <strong id="checkout-subtotal" class="text-slate-900 font-bold text-base">0 đ</strong>
+                </div>
+                <div id="discount-row" class="flex items-center justify-between text-slate-600 hidden">
+                  <span>Giảm giá (<span id="discount-code">-</span>)</span>
+                  <strong id="checkout-discount" class="text-rose-600 font-bold">-0 đ</strong>
+                </div>
+                <div class="flex items-center justify-between text-slate-600">
+                  <span>Thuế VAT (10%)</span>
+                  <strong id="checkout-tax" class="text-slate-900 font-bold">0 đ</strong>
+                </div>
+                <div class="border-t border-slate-200 pt-4">
+                  <p class="font-bold text-slate-700 mb-2">Vận chuyển</p>
+                  <label class="flex items-start gap-2.5 text-xs text-slate-600 cursor-pointer">
+                    <input type="radio" checked disabled class="mt-0.5 text-p-700 focus:ring-p-500" />
+                    <span>Miễn phí vận chuyển khi thanh toán trước 100%</span>
+                  </label>
+                  <a href="#" onclick="return false;" class="text-xs text-p-700 font-semibold hover:underline mt-1.5 block">Tính phí vận chuyển</a>
+                </div>
+                <div class="border-t border-slate-200 pt-4 flex items-center justify-between text-base font-bold text-slate-900">
+                  <span>Tổng</span>
+                  <strong id="checkout-total" class="text-slate-950 text-xl font-extrabold">0 đ</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Shipping Information Form -->
+            <form id="checkout-form" class="space-y-5 rounded-xl border border-slate-200 bg-slate-50/50 p-6">
+              <h3 class="font-lobster text-2xl text-p-900 border-b border-slate-200 pb-3 mb-5 uppercase tracking-wide">
+                Thông tin giao hàng
+              </h3>
+
+              <label class="block">
+                <span class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Họ tên</span>
+                <input
+                  id="checkout-customer-name"
+                  type="text"
+                  required
+                  class="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-p-600 focus:ring-2 focus:ring-p-100"
+                  placeholder="Nguyen Van A"
+                />
+              </label>
+
+              <label class="block">
+                <span class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Số điện thoại</span>
+                <input
+                  id="checkout-customer-phone"
+                  type="tel"
+                  required
+                  class="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-p-600 focus:ring-2 focus:ring-p-100"
+                  placeholder="0901234567"
+                />
+              </label>
+
+              <label class="block">
+                <span class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Địa chỉ nhận hàng</span>
+                <textarea
+                  id="checkout-customer-address"
+                  rows="3"
+                  required
+                  class="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-p-600 focus:ring-2 focus:ring-p-100"
+                  placeholder="Số nhà, đường, phường, quận, thành phố"
+                ></textarea>
+              </label>
+
+              <label class="block">
+                <span class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Ghi chú (tùy chọn)</span>
+                <textarea
+                  id="checkout-customer-notes"
+                  rows="2"
+                  class="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-p-600 focus:ring-2 focus:ring-p-100"
+                  placeholder="Hướng dẫn giao hàng..."
+                ></textarea>
+              </label>
+
+              <!-- Main Checkout Submit Button (lime green, matching "TIẾN HÀNH THANH TOÁN" in image) -->
+              <button
+                id="checkout-submit"
+                type="submit"
+                class="mt-4 inline-flex w-full items-center justify-center bg-[#a3e635] hover:bg-[#bef264] px-6 py-4.5 text-sm font-extrabold uppercase tracking-widest text-slate-900 transition-all duration-300 shadow-sm cursor-pointer"
+              >
+                Tiến hành thanh toán
+              </button>
+            </form>
           </aside>
         </div>
 
-        <section class="mt-10 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-          <div>
-            <div class="mb-5 flex items-center justify-between gap-4">
-              <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">Tea Station Cart</p>
-                <h2 class="mt-2 text-2xl font-semibold text-slate-900">Danh sách sản phẩm</h2>
-              </div>
-            </div>
-
-            <div id="checkout-items" class="space-y-4"></div>
-          </div>
-
-          <form id="checkout-form" class="space-y-4 rounded-[1.5rem] border border-black/5 bg-slate-50 p-5">
-            <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">Thông tin giao hàng</p>
-              <h2 class="mt-2 text-2xl font-semibold text-slate-900">Người nhận</h2>
-            </div>
-
-            <label class="block">
-              <span class="mb-2 block text-sm font-medium text-slate-700">Họ tên</span>
-              <input
-                id="checkout-customer-name"
-                type="text"
-                required
-                class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500"
-                placeholder="Nguyen Van A"
-              />
-            </label>
-
-            <label class="block">
-              <span class="mb-2 block text-sm font-medium text-slate-700">Số điện thoại</span>
-              <input
-                id="checkout-customer-phone"
-                type="tel"
-                required
-                class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500"
-                placeholder="0901234567"
-              />
-            </label>
-
-            <label class="block">
-              <span class="mb-2 block text-sm font-medium text-slate-700">Địa chỉ</span>
-              <textarea
-                id="checkout-customer-address"
-                rows="3"
-                required
-                class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500"
-                placeholder="Số nhà, đường, phường, quận, thành phố"
-              ></textarea>
-            </label>
-
-            <label class="block">
-              <span class="mb-2 block text-sm font-medium text-slate-700">Ghi chú</span>
-              <textarea
-                id="checkout-customer-notes"
-                rows="3"
-                class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500"
-                placeholder="Hướng dẫn giao hàng, khung giờ nhận..."
-              ></textarea>
-            </label>
-
-            <button
-              id="checkout-submit"
-              type="submit"
-              class="inline-flex w-full items-center justify-center rounded-full bg-emerald-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800"
-            >
-              Tạo đơn & lấy mã QR
-            </button>
-          </form>
-        </section>
-
+        <!-- SePay QR payment details panel -->
         <section
           id="checkout-payment-panel"
-          class="mt-8 hidden rounded-[1.5rem] border border-emerald-200 bg-emerald-50 p-5"
+          class="mt-10 hidden rounded-xl border border-p-200 bg-p-50/40 p-6 shadow-sm"
         >
           <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div class="max-w-xl">
-              <p class="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">Thanh toán SePay</p>
-              <h2 id="checkout-payment-title" class="mt-2 text-2xl font-semibold text-slate-900">
+              <p class="text-xs font-bold uppercase tracking-[0.28em] text-p-700">Thanh toán SePay</p>
+              <h2 id="checkout-payment-title" class="mt-2 text-2xl font-bold text-slate-900 font-lobster">
                 Đang tạo mã thanh toán
               </h2>
               <p id="checkout-payment-status" class="mt-2 text-sm text-slate-600"></p>
-              <div class="mt-4 space-y-2 text-sm text-slate-700">
-                <p><strong>Đơn hàng:</strong> <span id="checkout-payment-order-number">-</span></p>
-                <p><strong>Số tiền:</strong> <span id="checkout-payment-amount">-</span></p>
-                <p><strong>Nội dung chuyển khoản:</strong> <span id="checkout-payment-content">-</span></p>
-                <p><strong>Ngân hàng:</strong> <span id="checkout-payment-bank">-</span></p>
-                <p><strong>Chủ tài khoản:</strong> <span id="checkout-payment-account">-</span></p>
+              <div class="mt-4 space-y-2 text-sm text-slate-700 border-t border-p-100 pt-4">
+                <p><strong>Đơn hàng:</strong> <span id="checkout-payment-order-number" class="font-semibold">-</span></p>
+                <p><strong>Số tiền:</strong> <span id="checkout-payment-amount" class="font-semibold text-p-900">-</span></p>
+                <p><strong>Nội dung chuyển khoản:</strong> <span id="checkout-payment-content" class="font-mono bg-white px-2 py-0.5 rounded border border-p-100 select-all font-semibold">-</span></p>
+                <p><strong>Ngân hàng:</strong> <span id="checkout-payment-bank" class="font-semibold">-</span></p>
+                <p><strong>Chủ tài khoản:</strong> <span id="checkout-payment-account" class="font-semibold">-</span></p>
               </div>
             </div>
 
-            <div class="flex flex-col items-center gap-3 rounded-[1.5rem] bg-white p-4 shadow-sm">
+            <div class="flex flex-col items-center gap-3 rounded-xl bg-white p-4 shadow-sm border border-slate-100">
               <img
                 id="checkout-payment-qr"
                 alt="QR thanh toán"
-                class="h-64 w-64 rounded-2xl object-contain"
+                class="h-64 w-64 rounded-xl object-contain"
               />
               <a
                 id="checkout-payment-open"
                 href="#"
                 target="_blank"
                 rel="noreferrer"
-                class="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+                class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
               >
                 Mở QR
               </a>
@@ -168,5 +335,25 @@
         </section>
       </div>
     </main>
+
+    <!-- Navigation Behavior Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" defer></script>
+    <script src="./js/jquery.hidescroll.js" defer></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Init hidescroll and mobile menu toggle when jQuery is loaded
+        const checkJQuery = setInterval(() => {
+          if (window.jQuery) {
+            clearInterval(checkJQuery);
+            window.jQuery(".navbar").hidescroll();
+
+            // Hamburger menu toggle
+            window.jQuery("#toggle_btn").click(() => {
+              window.jQuery(".dropdown-menu").toggleClass("open");
+            });
+          }
+        }, 50);
+      });
+    </script>
   </body>
 </html>

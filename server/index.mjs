@@ -27,6 +27,64 @@ function sendHtmlFile(res, filePath) {
   res.sendFile(filePath);
 }
 
+function normalizeRouteSegment(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function buildProductsRoute(category) {
+  const normalizedCategory = normalizeRouteSegment(category);
+  return normalizedCategory ? `/products/${normalizedCategory}` : "/products";
+}
+
+function mountPrettyHtmlRoutes(rootDir) {
+  app.get("/", (_req, res) => {
+    sendHtmlFile(res, path.join(rootDir, "index.html"));
+  });
+
+  app.get("/index.html", (_req, res) => {
+    res.redirect(302, "/");
+  });
+
+  app.get("/products", (_req, res) => {
+    sendHtmlFile(res, path.join(rootDir, "products.html"));
+  });
+
+  app.get("/products.html", (req, res) => {
+    const category = req.query?.["filter-category"];
+    res.redirect(302, buildProductsRoute(category));
+  });
+
+  app.get("/products/:category", (_req, res) => {
+    sendHtmlFile(res, path.join(rootDir, "products.html"));
+  });
+
+  app.get("/checkout", (_req, res) => {
+    sendHtmlFile(res, path.join(rootDir, "checkout.html"));
+  });
+
+  app.get("/checkout.html", (req, res) => {
+    const query = new URLSearchParams(
+      Object.entries(req.query ?? {}).flatMap(([key, value]) => {
+        if (Array.isArray(value)) {
+          return value.map((item) => [key, String(item)]);
+        }
+
+        if (value === undefined) {
+          return [];
+        }
+
+        return [[key, String(value)]];
+      }),
+    );
+    const suffix = query.toString();
+    res.redirect(302, suffix ? `/checkout?${suffix}` : "/checkout");
+  });
+}
+
 const checkoutSchema = z.object({
   customerName: z
     .string({ required_error: "Vui long nhap ho ten nguoi nhan" })
@@ -43,6 +101,7 @@ const checkoutSchema = z.object({
     .trim()
     .min(5, "Dia chi qua ngan"),
   notes: z.string().trim().max(500).optional(),
+  promotionCode: z.string().trim().optional(),
   items: z
     .array(
       z.object({
@@ -147,18 +206,7 @@ function mountProjectRootStatic() {
   app.use("/css", express.static(path.join(serverEnv.projectRoot, "css"), regularStaticOptions));
   app.use("/dist", express.static(path.join(serverEnv.projectRoot, "dist"), regularStaticOptions));
   app.use("/js", express.static(path.join(serverEnv.projectRoot, "js"), regularStaticOptions));
-  app.get("/", (_req, res) => {
-    sendHtmlFile(res, path.join(serverEnv.projectRoot, "index.html"));
-  });
-  app.get("/index.html", (_req, res) => {
-    sendHtmlFile(res, path.join(serverEnv.projectRoot, "index.html"));
-  });
-  app.get("/products.html", (_req, res) => {
-    sendHtmlFile(res, path.join(serverEnv.projectRoot, "products.html"));
-  });
-  app.get("/checkout.html", (_req, res) => {
-    sendHtmlFile(res, path.join(serverEnv.projectRoot, "checkout.html"));
-  });
+  mountPrettyHtmlRoutes(serverEnv.projectRoot);
 }
 
 function mountPublishedSite() {
@@ -166,6 +214,7 @@ function mountPublishedSite() {
   app.use("/css", express.static(path.join(serverEnv.siteDir, "css"), regularStaticOptions));
   app.use("/dist", express.static(path.join(serverEnv.siteDir, "dist"), regularStaticOptions));
   app.use("/js", express.static(path.join(serverEnv.siteDir, "js"), regularStaticOptions));
+  mountPrettyHtmlRoutes(serverEnv.siteDir);
   app.get("*", (req, res, next) => {
     if (req.path.startsWith("/api/")) {
       next();

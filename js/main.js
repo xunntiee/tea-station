@@ -14,6 +14,46 @@ import {
 } from "./trevo-api.js";
 
 let trevoCatalogPromise = null;
+const PRODUCTS_ROUTE = "/products";
+const CHECKOUT_ROUTE = "/checkout";
+
+function normalizeRouteCategory(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function buildProductsUrl(category) {
+  const normalizedCategory = normalizeRouteCategory(category);
+  return normalizedCategory
+    ? `${PRODUCTS_ROUTE}/${encodeURIComponent(normalizedCategory)}`
+    : PRODUCTS_ROUTE;
+}
+
+function buildCheckoutUrl(productsValue) {
+  if (!productsValue) {
+    return CHECKOUT_ROUTE;
+  }
+
+  return `${CHECKOUT_ROUTE}?products=${encodeURIComponent(productsValue)}`;
+}
+
+function readCurrentCategoryFromLocation() {
+  const pathMatch = window.location.pathname.match(/^\/products\/([^/?#]+)$/i);
+  if (pathMatch?.[1]) {
+    return normalizeRouteCategory(decodeURIComponent(pathMatch[1]));
+  }
+
+  if (window.location.search.includes("filter-category=")) {
+    return normalizeRouteCategory(
+      new URLSearchParams(window.location.search).get("filter-category"),
+    );
+  }
+
+  return "all";
+}
 
 async function loadTrevoCatalog() {
   if (!trevoCatalogPromise) {
@@ -209,6 +249,9 @@ function normalizeSearchText(value) {
 }
 
 function buildProductDescription(product) {
+  if (product.shortDescription) return product.shortDescription;
+  if (product.description) return product.description;
+
   const parts = [];
 
   if (product.categoryName) {
@@ -221,7 +264,7 @@ function buildProductDescription(product) {
 
   parts.push(
     product.availableStock > 0
-      ? `Còn  sản phẩm`
+      ? `Còn ${product.availableStock} sản phẩm`
       : "Tạm hết hàng",
   );
 
@@ -429,7 +472,7 @@ function renderProductCard(product) {
           </div>
           <div class="flex flex-col items-end gap-2">
             <a
-              href="./checkout.html?products=${encodeURIComponent(`${product.id}:${Math.max(product.minOrderQty ?? 1, 1)}`)}"
+              href="${buildCheckoutUrl(`${product.id}:${Math.max(product.minOrderQty ?? 1, 1)}`)}"
               class="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 ${product.availableStock > 0 ? "" : "pointer-events-none opacity-50"}"
               ${product.availableStock > 0 ? "" : 'aria-disabled="true"'}
             >
@@ -446,7 +489,7 @@ function renderProductCard(product) {
 function renderFeaturedProductCard(selection) {
   const { product, config } = selection;
   const categoryKey = normalizeProductCategory(product.categoryName);
-  const targetUrl = `./products.html?filter-category=${encodeURIComponent(categoryKey)}`;
+  const targetUrl = buildProductsUrl(categoryKey);
   const quantity = Math.max(product.minOrderQty ?? 1, 1);
   const price = formatCurrencyVnd(product.salePrice);
   const stockLabel =
@@ -482,7 +525,7 @@ function renderFeaturedProductCard(selection) {
           </div>
           <div class="flex flex-col items-end gap-2">
             <a
-              href="./checkout.html?products=${encodeURIComponent(`${product.id}:${quantity}`)}"
+              href="${buildCheckoutUrl(`${product.id}:${quantity}`)}"
               class="inline-flex items-center justify-center rounded-full bg-p-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-p-700 ${product.availableStock > 0 ? "" : "pointer-events-none opacity-50"}"
               ${product.availableStock > 0 ? "" : 'aria-disabled="true"'}
             >
@@ -530,7 +573,7 @@ function renderBestSellerSlide(selection) {
           <div class="flex flex-wrap gap-3">
             <a
               class="btn"
-              href="./checkout.html?products=${encodeURIComponent(`${product.id}:${quantity}`)}"
+              href="${buildCheckoutUrl(`${product.id}:${quantity}`)}"
               ${product.availableStock > 0 ? "" : 'aria-disabled="true"'}
             >
               ${escapeHtml(ctaLabel)}
@@ -555,32 +598,48 @@ function renderBestSellerSlide(selection) {
 function setActiveFilterLink() {
   const filterLinks = document.querySelectorAll("#allProduct-filters a");
   if (filterLinks.length === 0) {
-    return;
+    return "all";
   }
+
+  const category = readCurrentCategoryFromLocation();
 
   filterLinks.forEach((link) => link.classList.remove("activeFilter"));
-
-  const category = new URLSearchParams(window.location.search).get("filter-category");
-  switch (category) {
-    case "whitetea":
-      document.getElementById("f-whitetea")?.classList.add("activeFilter");
-      break;
-    case "oolong":
-      document.getElementById("f-oolong")?.classList.add("activeFilter");
-      break;
-    case "blacktea":
-      document.getElementById("f-blacktea")?.classList.add("activeFilter");
-      break;
-    case "matcha":
-      document.getElementById("f-matcha")?.classList.add("activeFilter");
-      break;
-    case "herbal":
-      document.getElementById("f-herbal")?.classList.add("activeFilter");
-      break;
-    default:
-      document.getElementById("f-all")?.classList.add("activeFilter");
-      break;
+  
+  const activeLink = document.getElementById(`f-${category}`) || document.getElementById("f-all");
+  if (activeLink) {
+    activeLink.classList.add("activeFilter");
   }
+
+  return category;
+}
+
+function applyProductFilter(category) {
+  const items = document.querySelectorAll("[data-filterable]");
+  items.forEach((item) => {
+    const productCategory = normalizeRouteCategory(item.dataset.filterCategory);
+    const shouldShow = category === "all" || productCategory === category;
+    item.classList.toggle("hidden", !shouldShow);
+  });
+}
+
+function attachFilterHandlers() {
+  const filterLinks = document.querySelectorAll("#allProduct-filters a");
+  filterLinks.forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      const nextUrl = new URL(link.href, window.location.origin);
+      window.history.pushState({}, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
+
+      const category = setActiveFilterLink();
+      applyProductFilter(category);
+    });
+  });
+  
+  window.addEventListener("popstate", () => {
+    const category = setActiveFilterLink();
+    applyProductFilter(category);
+  });
 }
 
 function renderProductState(container, html) {
@@ -660,10 +719,17 @@ function mountCatalogDebugPanel(container, products) {
 function updateCartBadges(count = getCartItemCount()) {
   document.querySelectorAll("[data-cart-count]").forEach((node) => {
     node.textContent = String(count);
+    node.classList.toggle("hidden", count < 1);
+  });
+
+  document.querySelectorAll("[data-cart-link]").forEach((node) => {
+    const label = count > 0 ? `Gio hang (${count})` : "Gio hang";
+    node.setAttribute("aria-label", label);
+    node.setAttribute("title", label);
   });
 
   document.querySelectorAll("[data-cart-label]").forEach((node) => {
-    node.textContent = count > 0 ? `Giỏ hàng ()` : "Giỏ hàng";
+    node.textContent = count > 0 ? `Gio hang (${count})` : "Gio hang";
   });
 }
 
@@ -720,9 +786,9 @@ $(async function () {
     mountCatalogDebugPanel(container, products);
     container.innerHTML = products.map(renderProductCard).join("");
 
-    if ($.fn.filterjitsu) {
-      $.fn.filterjitsu();
-    }
+    const category = setActiveFilterLink();
+    applyProductFilter(category);
+    attachFilterHandlers();
   } catch (error) {
     const message =
       error instanceof Error

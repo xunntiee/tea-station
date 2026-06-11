@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
     <title>Tea Station</title>
     <link rel="icon" type="image/png" href="./assets/logo.png" />
 
@@ -64,7 +65,7 @@
           class="max-w-[1536px] w-full py-4 px-4 md:py-10 md:px-[72px] flex items-center justify-between"
         >
           <!-- Logo -->
-          <a href="./" class="flex items-center justify-center flex-none">
+          <a href="/" class="flex items-center justify-center flex-none">
             <img
               src="./assets/logo.png"
               alt="logo"
@@ -81,14 +82,34 @@
           <nav
             class="items-center justify-end hidden w-full gap-4 lg:flex lg:gap-8"
           >
-            <a href="./products.html" class="navLink"> Sản Phẩm </a>
-            <a href="./#story" class="navLink"> Giới Thiệu </a>
-            <a href="./#contact" class="navLink"> Liên Hệ </a>
-            <a href="./checkout.html" class="navLink">
-              <span data-cart-label>Giỏ hàng</span>
+            <a href="/products" class="navLink"> Sản Phẩm </a>
+            <a href="/#story" class="navLink"> Giới Thiệu </a>
+            <a href="/#contact" class="navLink"> Liên Hệ </a>
+            <a
+              href="/checkout"
+              data-cart-link
+              aria-label="Gio hang"
+              title="Gio hang"
+              class="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-5 w-5"
+                aria-hidden="true"
+              >
+                <circle cx="9" cy="20" r="1"></circle>
+                <circle cx="18" cy="20" r="1"></circle>
+                <path d="M3 4h2l2.4 10.5a1 1 0 0 0 1 .8h9.9a1 1 0 0 0 1-.8L21 7H7"></path>
+              </svg>
+              <span class="sr-only" data-cart-label>Gio hang</span>
               <span
                 data-cart-count
-                class="ml-2 inline-flex min-w-6 items-center justify-center rounded-full bg-p-900 px-2 py-0.5 text-xs text-white"
+                class="absolute -right-1 -top-1 inline-flex hidden h-5 min-w-5 items-center justify-center rounded-full bg-p-900 px-1.5 text-[10px] font-semibold leading-none text-white"
                 >0</span
               >
             </a>
@@ -105,11 +126,11 @@
 
           <!-- Mobile Menu -->
           <div class="dropdown-menu lg:hidden">
-            <a href="./products.html" class="navLink mobileNavLink">
+            <a href="/products" class="navLink mobileNavLink">
               Sản Phẩm
             </a>
-            <a href="./#story" class="navLink mobileNavLink"> Giới Thiệu </a>
-            <a href="./#contact" class="navLink mobileNavLink"> Liên Hệ </a>
+            <a href="/#story" class="navLink mobileNavLink"> Giới Thiệu </a>
+            <a href="/#contact" class="navLink mobileNavLink"> Liên Hệ </a>
           </div>
         </div>
       </div>
@@ -279,7 +300,7 @@
                     lực cho cơ thể và trí óc của bạn!
                   </p>
                   <button>
-                    <a href="./products.html?filter-category=matcha" class="btn"
+                    <a href="/products/matcha" class="btn"
                       >Xem Sản Phẩm Matcha
                       <img src="./assets/right-arrow.svg" alt="right-arrow"
                     /></a>
@@ -314,7 +335,7 @@
                   </p>
                   <button>
                     <a
-                      href="./products.html?filter-category=whitetea"
+                      href="/products/whitetea"
                       class="btn"
                       >Xem Sản Phẩm Trà Trắng
                       <img src="./assets/right-arrow.svg" alt="right-arrow"
@@ -352,7 +373,7 @@
                     từng ngụm một!
                   </p>
                   <button>
-                    <a href="./products.html?filter-category=oolong" class="btn"
+                    <a href="/products/oolong" class="btn"
                       >Xem Sản Phẩm Trà Ô Long
                       <img src="./assets/right-arrow.svg" alt="right-arrow"
                     /></a>
@@ -384,7 +405,7 @@
                   </p>
                   <button>
                     <a
-                      href="./products.html?filter-category=blacktea"
+                      href="/products/blacktea"
                       class="btn"
                       >Xem Sản Phẩm Trà Đen
                       <img src="./assets/right-arrow.svg" alt="right-arrow"
@@ -410,7 +431,7 @@
                   </p>
                   <button>
                     <a
-                      href="./products.html?filter-category=herbal"
+                      href="/products/herbal"
                       class="btn"
                       >Xem Sản Phẩm Trà Thảo Mộc
                       <img src="./assets/right-arrow.svg" alt="right-arrow"
@@ -570,7 +591,7 @@
                 Sản phẩm thật <span class="text-gradient">từ Tea Station</span>
               </h2>
             </div>
-            <a href="./products.html" class="btn w-fit">Xem toàn bộ catalog</a>
+            <a href="/products" class="btn w-fit">Xem toàn bộ catalog</a>
           </div>
           <div
             id="home-trevo-featured-products"

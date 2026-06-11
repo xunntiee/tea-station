@@ -98,6 +98,27 @@ export function addToCart(productId, quantity = 1) {
   return setStoredCartItems(nextItems);
 }
 
+export function setCartItemQuantity(productId, quantity) {
+  const normalizedProductId = String(productId ?? "").trim();
+  if (!normalizedProductId) {
+    return getStoredCartItems();
+  }
+
+  const parsedQuantity = Number.parseInt(quantity ?? "", 10);
+  const nextItems = getStoredCartItems().filter(
+    (item) => item.productId !== normalizedProductId,
+  );
+
+  if (Number.isInteger(parsedQuantity) && parsedQuantity > 0) {
+    nextItems.push({
+      productId: normalizedProductId,
+      quantity: parsedQuantity,
+    });
+  }
+
+  return setStoredCartItems(nextItems);
+}
+
 export function removeFromCart(productId) {
   const nextItems = getStoredCartItems().filter(
     (item) => item.productId !== productId,

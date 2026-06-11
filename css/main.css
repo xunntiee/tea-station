@@ -259,4 +259,54 @@
   .activeFilter {
     @apply !text-p-900 border-b-2 border-b-p-900;
   }
+
+  /* Coupon Ticket Badge Styles */
+  .coupon-ticket {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #3b82f6;
+    background-color: #eff6ff;
+    border: 1px dashed #3b82f6;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    overflow: visible;
+  }
+  .coupon-ticket:hover {
+    background-color: #dbeafe;
+  }
+  .coupon-ticket::before,
+  .coupon-ticket::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 6px;
+    height: 12px;
+    background-color: white; /* Matches container/page background */
+    border: 1px dashed #3b82f6;
+    transform: translateY(-50%);
+  }
+  .coupon-ticket::before {
+    left: -1px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    border-left: 0;
+  }
+  .coupon-ticket::after {
+    right: -1px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-right: 0;
+  }
 }
+
