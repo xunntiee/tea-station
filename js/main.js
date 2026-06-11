@@ -723,13 +723,13 @@ function updateCartBadges(count = getCartItemCount()) {
   });
 
   document.querySelectorAll("[data-cart-link]").forEach((node) => {
-    const label = count > 0 ? `Gio hang (${count})` : "Gio hang";
+    const label = count > 0 ? `Giỏ hàng (${count})` : "Giỏ hàng";
     node.setAttribute("aria-label", label);
     node.setAttribute("title", label);
   });
 
   document.querySelectorAll("[data-cart-label]").forEach((node) => {
-    node.textContent = count > 0 ? `Gio hang (${count})` : "Gio hang";
+    node.textContent = count > 0 ? `Giỏ hàng (${count})` : "Giỏ hàng";
   });
 }
 

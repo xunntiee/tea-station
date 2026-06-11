@@ -45,8 +45,8 @@
             <a
               href="/checkout"
               data-cart-link
-              aria-label="Gio hang"
-              title="Gio hang"
+              aria-label="Giỏ hàng"
+              title="Giỏ hàng"
               class="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
             >
               <svg
@@ -63,7 +63,7 @@
                 <circle cx="18" cy="20" r="1"></circle>
                 <path d="M3 4h2l2.4 10.5a1 1 0 0 0 1 .8h9.9a1 1 0 0 0 1-.8L21 7H7"></path>
               </svg>
-              <span class="sr-only" data-cart-label>Gio hang</span>
+              <span class="sr-only" data-cart-label>Giỏ hàng</span>
               <span
                 data-cart-count
                 class="absolute -right-1 -top-1 inline-flex hidden h-5 min-w-5 items-center justify-center rounded-full bg-p-900 px-1.5 text-[10px] font-semibold leading-none text-white"
@@ -94,6 +94,19 @@
     </header>
 
     <main class="mx-auto max-w-7xl px-4 pt-28 pb-8 md:pt-36 md:pb-16">
+
+      <!-- Breadcrumbs -->
+      <div class="max-w-6xl mx-auto mb-6 flex items-center gap-2 text-sm text-slate-500 font-medium px-4">
+        <a href="/" class="hover:text-emerald-700 transition-colors">Trang chủ</a>
+        <svg class="h-3 w-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+        <a href="/products" class="hover:text-emerald-700 transition-colors">Sản phẩm</a>
+        <svg class="h-3 w-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+        <span class="font-bold text-slate-800">Thanh toán</span>
+      </div>
 
       <!-- Title & Header -->
       <div class="mb-12 text-center">

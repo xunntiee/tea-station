@@ -123,7 +123,7 @@ export const trevoConfig = {
         nameIncludes: ["matcha"],
         category: "matcha",
         eyebrow: "Tea Station Selection",
-        ctaLabel: "Xem dong Matcha",
+        ctaLabel: "Xem dòng Matcha",
       },
       {
         key: "white-tea-gift",
@@ -131,8 +131,8 @@ export const trevoConfig = {
         preferredIds: [],
         nameIncludes: ["white tea", "tra trang"],
         category: "whitetea",
-        eyebrow: "Qua tang tinh te",
-        ctaLabel: "Xem dong Tra Trang",
+        eyebrow: "Quà tặng tinh tế",
+        ctaLabel: "Xem dòng Trà Trắng",
       },
       {
         key: "oolong-daily",
@@ -140,8 +140,8 @@ export const trevoConfig = {
         preferredIds: [],
         nameIncludes: ["oolong", "o long"],
         category: "oolong",
-        eyebrow: "Ban hang on dinh",
-        ctaLabel: "Xem dong Oolong",
+        eyebrow: "Bán hàng ổn định",
+        ctaLabel: "Xem dòng Oolong",
       },
       {
         key: "black-tea-story",
@@ -149,8 +149,8 @@ export const trevoConfig = {
         preferredIds: [],
         nameIncludes: ["black tea", "tra den", "earl grey"],
         category: "blacktea",
-        eyebrow: "Huong vi chu dao",
-        ctaLabel: "Xem dong Tra Den",
+        eyebrow: "Hương vị chủ đạo",
+        ctaLabel: "Xem dòng Trà Đen",
       },
     ],
     bestSellerCarousel: [
@@ -160,10 +160,10 @@ export const trevoConfig = {
         preferredIds: [],
         nameIncludes: ["black tea", "tra den", "earl grey"],
         category: "blacktea",
-        eyebrow: "Khach hang yeu thich",
+        eyebrow: "Khách hàng yêu thích",
         pitch:
-          "Huong vi dam va ro lop, hop cho nhung ai muon mot chen tra co chieu sau.",
-        ctaLabel: "Dat ngay",
+          "Hương vị đậm và rõ lớp, hợp cho những ai muốn một chén trà có chiều sâu.",
+        ctaLabel: "Đặt ngay",
       },
       {
         key: "matcha-energy",
@@ -171,10 +171,10 @@ export const trevoConfig = {
         preferredIds: [],
         nameIncludes: ["matcha"],
         category: "matcha",
-        eyebrow: "Nang luong buoi sang",
+        eyebrow: "Năng lượng buổi sáng",
         pitch:
-          "Tong vi tuoi moi, de dua vao combo breakfast va nhom khach hang tre.",
-        ctaLabel: "Dat ngay",
+          "Tông vị tươi mới, dễ đưa vào combo breakfast và nhóm khách hàng trẻ.",
+        ctaLabel: "Đặt ngay",
       },
       {
         key: "oolong-balance",
@@ -182,10 +182,10 @@ export const trevoConfig = {
         preferredIds: [],
         nameIncludes: ["oolong", "o long"],
         category: "oolong",
-        eyebrow: "Lua chon de thuong thuc",
+        eyebrow: "Lựa chọn để thưởng thức",
         pitch:
-          "Can bang giua do dam va hau vi thoang, phu hop cho nhieu khung gio trong ngay.",
-        ctaLabel: "Dat ngay",
+          "Cân bằng giữa độ đậm và hậu vị thoảng, phù hợp cho nhiều khung giờ trong ngày.",
+        ctaLabel: "Đặt ngay",
       },
       {
         key: "white-tea-relax",
@@ -193,10 +193,10 @@ export const trevoConfig = {
         preferredIds: [],
         nameIncludes: ["white tea", "tra trang"],
         category: "whitetea",
-        eyebrow: "Nhe nhang va tinh te",
+        eyebrow: "Nhẹ nhàng và tinh tế",
         pitch:
-          "Danh cho nhung bo qua tang, tra thu gian va hinh anh thuong hieu thanh lich.",
-        ctaLabel: "Dat ngay",
+          "Dành cho những bộ quà tặng, trà thư giãn và hình ảnh thương hiệu thanh lịch.",
+        ctaLabel: "Đặt ngay",
       },
     ],
   },

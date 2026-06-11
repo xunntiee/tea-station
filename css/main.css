@@ -252,8 +252,17 @@
     @apply transition-all duration-500 group-hover:scale-110;
   }
 
+  #allProduct-filters {
+    @apply sticky z-40 bg-[#fcf9f5]/90 backdrop-blur-md py-4 px-4 flex gap-4 md:gap-8 flex-wrap justify-center border-b border-slate-200/50 transition-all duration-300;
+    top: 80px;
+  }
+
+  header:has(.navbar.hidden) ~ #products #allProduct-filters {
+    top: 0;
+  }
+
   #allProduct-filters a {
-    @apply text-xs font-medium text-n-500 hover:text-n-700 md:text-base;
+    @apply text-xs font-medium text-n-500 hover:text-n-700 md:text-base transition-colors duration-200;
   }
 
   .activeFilter {
